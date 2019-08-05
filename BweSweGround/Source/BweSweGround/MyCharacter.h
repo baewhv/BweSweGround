@@ -26,9 +26,33 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-
-	class USpringArmComponent * SpringArm;
+	UPROPERTY(VisibleAnywhere)
+	class USpringArmComponent* SpringArm;
+	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* Camera;
+
+	void MoveForward(float Value);
+	void MoveRight(float Value);
+	void LookUp(float Value);
+	void Turn(float Value);
+
+	void Sprint_Start();
+	void Sprint_End();
+
+	void Aim_Start();
+	void Aim_End();
+
+	void Crouch_Start();
+	void Crouch_End();
+
+
+	float WalkSpeed = 600.0f;
+	float SprintSpeed = 1.0f;
+	float CouchSpeed = 1.0f;
+	float AimSpeed = 1.0f;
 	
+	uint8 bIsSprint : 1;
+	uint8 bIsAim : 1;
+	uint8 bIsCrouch : 1;
 
 };
