@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "MyCharacter.generated.h"
+#define DEFAULT 1.0f;
 
 UCLASS()
 class BWESWEGROUND_API AMyCharacter : public ACharacter
@@ -30,6 +31,8 @@ public:
 	class USpringArmComponent* SpringArm;
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* Camera;
+	UPROPERTY(VisibleAnywhere)
+	class USkeletalMeshComponent* Weapon;
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -46,13 +49,23 @@ public:
 	void Crouch_End();
 
 
+
 	float WalkSpeed = 600.0f;
 	float SprintSpeed = 1.0f;
 	float CouchSpeed = 1.0f;
 	float AimSpeed = 1.0f;
+
+	float ForwardValue = 0.0f;
+	float RightValue = 0.0f;
 	
 	uint8 bIsSprint : 1;
 	uint8 bIsAim : 1;
 	uint8 bIsCrouch : 1;
+	uint8 bIsMotion : 1;
+
+	FRotator GetAimOffset() const;
+	//숙이는 것은 기본 기능으로 있음. (Nav CanCrouch
+
+
 
 };
