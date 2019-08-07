@@ -20,9 +20,11 @@ void UMyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsAim = Pawn->bIsAim;
 		bIsCrouch = Pawn->bIsCrouch;
 		bIsFalling = Pawn->GetCharacterMovement()->IsFalling();
+		bIsAlive = Pawn->bIsAlive;
 		Yaw = CalculateDirection(Pawn->GetCharacterMovement()->Velocity, Pawn->GetActorRotation());
 		AimYaw = Pawn->GetAimOffset().Yaw;
 		AimPitch = Pawn->GetAimOffset().Pitch;
+		FireAlpha = Pawn->bIsFire ? 1 : 0;
 	}
 }
 

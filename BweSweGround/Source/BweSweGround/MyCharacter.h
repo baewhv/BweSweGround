@@ -48,7 +48,12 @@ public:
 	void Crouch_Start();
 	void Crouch_End();
 
+	void StartFire();
+	void StopFire();
 
+	void Fire();
+
+	
 
 	float WalkSpeed = 600.0f;
 	float SprintSpeed = 1.0f;
@@ -62,10 +67,36 @@ public:
 	uint8 bIsAim : 1;
 	uint8 bIsCrouch : 1;
 	uint8 bIsMotion : 1;
+	uint8 bIsAlive : 1;
+
+	uint8 bIsFire : 1;
 
 	FRotator GetAimOffset() const;
 	//숙이는 것은 기본 기능으로 있음. (Nav CanCrouch
 
+	FTimerHandle FireTimer;
 
+	UFUNCTION()
+	void FireTimerFunction();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+	class UParticleSystem* BloodEffect;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+	class UParticleSystem* HitEffect;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+	class UParticleSystem* MuzzleFlash;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+	class USoundBase* FireSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+	class UMaterialInterface* BulletDecal;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+	class UMaterialInterface* BulletDecalBlood;
+
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)override;
+	
+	void SetDamage(float damage);
+
+private:
+	float HP;
 };
