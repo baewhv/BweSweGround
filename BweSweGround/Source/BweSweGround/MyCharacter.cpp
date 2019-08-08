@@ -5,6 +5,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "MyWeaponComponent.h"
 #include "Components/InputComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -15,7 +16,8 @@
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/DecalComponent.h" 
-
+#include "Components/CapsuleComponent.h"
+#include "MyCameraShake.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -29,7 +31,7 @@ AMyCharacter::AMyCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
 
-	Weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
+	Weapon = CreateDefaultSubobject<UMyWeaponComponent>(TEXT("Weapon"));
 	Weapon->SetupAttachment(GetMesh(), TEXT("WeaponSocket"));
 
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -88.0f));
@@ -41,10 +43,11 @@ AMyCharacter::AMyCharacter()
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 300.0f;
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCharacterMovement()->CrouchedHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+	//앉았을 때 캡슐 콜라이더 수정
 	bIsMotion = false;
 	bIsAlive = true;
-	HP = 100.0f;
-
+	Tags.Add(TEXT("Character"));
 }
 
 // Called when the game starts or when spawned
@@ -52,6 +55,9 @@ void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	NormalSpringArmPosition = GetSpringArmPosition();//서 있을 때
+	CrouchSpringArmPosition = NormalSpringArmPosition + FVector(0, 0, -44.0f);	//앉아 있을 때.
+	CurrentHP = MaxHP;	//체력 초기화
 }
 
 // Called every frame
@@ -59,7 +65,7 @@ void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed * SprintSpeed * CouchSpeed * AimSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed * SprintSpeed * AimSpeed;
 
 	//FString Temp = FString::Printf(TEXT("Pos (%f, %f)"),ForwardValue, RightValue);
 	//UKismetSystemLibrary::PrintString(GetWorld(), Temp);
@@ -138,12 +144,15 @@ void AMyCharacter::Sprint_Start()
 	if (bIsAim)
 	{
 		Aim_End();
-		Crouch_End();
+	}
+	if(bIsCrouched)
+	{
+		UnCrouch();
 	}
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsSprint = true;
-	SprintSpeed = 1.2f;
+	SprintSpeed = SprintSpeedValue;
 }
 
 void AMyCharacter::Sprint_End()
@@ -161,32 +170,44 @@ void AMyCharacter::Aim_Start()
 		Sprint_End();
 	}
 	bIsAim = true;
-	AimSpeed = 0.6f;
-	SpringArm->TargetArmLength = 80.0f;
+	AimSpeed = AimSpeedValue;
+	//SpringArm->TargetArmLength = 80.0f;	->카메라로(MyPlayerCameraManager) 조정
 }
 
 void AMyCharacter::Aim_End()
 {
 	bIsAim = false;
 	AimSpeed = 1.0f;
-	SpringArm->TargetArmLength = 200.0f;
+	//SpringArm->TargetArmLength = 200.0f;
 }
 
 void AMyCharacter::Crouch_Start()
 {
+	if (bIsMotion)
+	{
+		return;
+	}
 	if (bIsSprint)
 	{
 		Sprint_End();
 	}
-	//SpringArm->SocketOffset = FVector(0, 100.0f, 70.0f);
-	bIsCrouch = true;
-	CouchSpeed = 0.6f;
+	////SpringArm->SocketOffset = FVector(0, 100.0f, 70.0f);
+	//bIsCrouch = true;
+	//CrouchSpeed = 0.6f;
+	if (CanCrouch())
+	{
+		Crouch();
+	}
+	else
+	{
+		UnCrouch();
+	}
 }
 
 void AMyCharacter::Crouch_End()
 {
-	bIsCrouch = false;
-	CouchSpeed = 1.0f;
+	//bIsCrouch = false;
+	//CrouchSpeed = 1.0f;
 }
 
 void AMyCharacter::StartFire()
@@ -205,6 +226,10 @@ void AMyCharacter::Fire()
 	if (!bIsFire)
 	{
 		return;
+	}
+	if (bIsSprint)
+	{
+		Sprint_End();
 	}
 
 	FVector CameraLocation;
@@ -253,7 +278,7 @@ void AMyCharacter::Fire()
 			UParticleSystem* HitP;
 			UMaterialInterface* DecalP;
 
-			if (OutHit.GetActor()->ActorHasTag(TEXT("Player")))
+			if (OutHit.GetActor()->ActorHasTag(TEXT("Character")))
 			{
 				HitP = BloodEffect;
 				DecalP = BulletDecalBlood;
@@ -300,6 +325,13 @@ void AMyCharacter::Fire()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, Weapon->GetSocketTransform(TEXT("Muzzle")));
 	}
 
+	if (PC)
+	{
+		//PC->PlayerCameraManager->PlayCameraShake(UMyCameraShake::StaticClass());
+		//PC->PlayerCameraManager->PlayWorldCameraShake();	//모든 곳 흔들기?
+		PC->PlayerCameraManager->PlayCameraShake(FireCameraShake);	//카메라 쉐이크를 선택하게끔
+	}
+
 	if (bIsFire)
 	{
 		GetWorldTimerManager().SetTimer(FireTimer, this, &AMyCharacter::FireTimerFunction, 0.12);
@@ -323,6 +355,10 @@ void AMyCharacter::FireTimerFunction()
 
 float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
 {
+	if (CurrentHP == 0)	//또 죽이지 않도록 방지
+	{
+		return 0;
+	}
 	if (DamageEvent.IsOfType(FRadialDamageEvent::ClassID))
 	{
 		FRadialDamageEvent* RadialDamageEvent = (FRadialDamageEvent*)(&DamageEvent);
@@ -337,16 +373,36 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 		FPointDamageEvent* PointDamageEvent = (FPointDamageEvent*)(&DamageEvent);
 		if (PointDamageEvent->HitInfo.BoneName.Compare(TEXT("Head")) == 0)
 		{
-			SetDamage(DamageAmount*100);
+			CurrentHP = 0;
+			//SetDamage(DamageAmount*10);
 		}
 		else
 		{
-			SetDamage(DamageAmount);
+			CurrentHP -= DamageAmount;
+			//SetDamage(DamageAmount);
 		}
 	}
 	else
 	{
 		SetDamage(DamageAmount);
+	}
+
+	FString HitName = FString::Printf(TEXT("Death_%d"), FMath::RandRange(1, 4));
+	PlayAnimMontage(HitAnimation, 1.0f, FName(*HitName));
+
+	CurrentHP = FMath::Clamp<float>(CurrentHP, 0, MaxHP);	//체력을 보정(-로 떨어져도 0으로 고정)
+
+	if (CurrentHP == 0)
+	{
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
+		//GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);	//메쉬 물리 체크 켜기.
+		//GetMesh()->SetSimulatePhysics(true);
+		//bIsAlive = false;
+
+		FString DeadName = FString::Printf(TEXT("Death_%d"), FMath::RandRange(1, 3));
+
+		PlayAnimMontage(DeadAnimation, 1.0f, FName(*DeadName));
+		SetLifeSpan(5.0f);
 	}
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -355,9 +411,9 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 void AMyCharacter::SetDamage(float damage)
 {
 
-	if (HP <= damage)
+	if (CurrentHP <= damage)
 	{
-		HP = 0.0f;
+		CurrentHP = 0.0f;
 		if (bIsAlive)
 		{
 			bIsAlive = false;
@@ -367,8 +423,18 @@ void AMyCharacter::SetDamage(float damage)
 	}
 	else
 	{
-		HP -= damage;
-		UE_LOG(LogClass, Warning, TEXT("Get %f Damage! %f Left"), damage, HP);
+		CurrentHP -= damage;
+		UE_LOG(LogClass, Warning, TEXT("Get %f Damage! %f Left"), damage, CurrentHP);
 
 	}
+}
+
+FVector AMyCharacter::GetSpringArmPosition() const
+{
+	return SpringArm->GetRelativeTransform().GetLocation();
+}
+
+void AMyCharacter::SetSpringArmPosition(FVector  NewPosition)
+{
+	SpringArm->SetRelativeLocation(NewPosition);
 }

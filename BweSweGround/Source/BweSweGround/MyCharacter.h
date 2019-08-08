@@ -32,7 +32,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* Camera;
 	UPROPERTY(VisibleAnywhere)
-	class USkeletalMeshComponent* Weapon;
+	class UMyWeaponComponent* Weapon;
 
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -54,18 +54,26 @@ public:
 	void Fire();
 
 	
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
 	float WalkSpeed = 600.0f;
+
 	float SprintSpeed = 1.0f;
-	float CouchSpeed = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
+	float SprintSpeedValue = 1.5f;
+	//
+	//float CrouchSpeed = 1.0f;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
+	//float CrouchSpeedValue = 1.0f;
+
 	float AimSpeed = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
+	float AimSpeedValue = 0.6f;
 
 	float ForwardValue = 0.0f;
 	float RightValue = 0.0f;
 	
 	uint8 bIsSprint : 1;
 	uint8 bIsAim : 1;
-	uint8 bIsCrouch : 1;
 	uint8 bIsMotion : 1;
 	uint8 bIsAlive : 1;
 
@@ -97,6 +105,27 @@ public:
 	
 	void SetDamage(float damage);
 
-private:
-	float HP;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FVector NormalSpringArmPosition;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FVector CrouchSpringArmPosition;
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetSpringArmPosition() const;
+	
+	UFUNCTION(BlueprintCallable)
+	void SetSpringArmPosition(FVector NewPosition);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UCameraShake> FireCameraShake;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float CurrentHP = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MaxHP = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UAnimMontage* DeadAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UAnimMontage* HitAnimation;
 };

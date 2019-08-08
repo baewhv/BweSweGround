@@ -18,7 +18,7 @@ void UMyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		ForwardValue = Pawn->ForwardValue;
 		bIsSprint = Pawn->bIsSprint;
 		bIsAim = Pawn->bIsAim;
-		bIsCrouch = Pawn->bIsCrouch;
+		bIsCrouch = Pawn->bIsCrouched;
 		bIsFalling = Pawn->GetCharacterMovement()->IsFalling();
 		bIsAlive = Pawn->bIsAlive;
 		Yaw = CalculateDirection(Pawn->GetCharacterMovement()->Velocity, Pawn->GetActorRotation());
