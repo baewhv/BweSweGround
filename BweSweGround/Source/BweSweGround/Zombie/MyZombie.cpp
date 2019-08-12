@@ -7,6 +7,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Perception/PawnSensingComponent.h"
 #include "Zombie/AI/ZombieAIController.h"
+#include "Kismet/GameplayStatics.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "Player/MyCharacter.h"
 
 // Sets default values
 AMyZombie::AMyZombie()
@@ -35,7 +38,7 @@ void AMyZombie::BeginPlay()
 	CurrentHP = MaxHP;
 
 	PawnSensing->OnSeePawn.AddDynamic(this, &AMyZombie::OnSeenPawn);		//다른 컴포넌트의 델리게이트 호출방법(in cpp)
-	PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
+	//PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
 
 }
 
@@ -121,8 +124,14 @@ float AMyZombie::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent
 
 void AMyZombie::OnSeenPawn(APawn * Pawn)
 {
-	UE_LOG(LogClass, Warning, TEXT("Active"));
-	if (CurrentState == EZombieState::Normal && Pawn->ActorHasTag(TEXT("Player")))
+	AMyCharacter* Player = Cast<AMyCharacter>(Pawn);
+	if (!Player)
+	{
+		return;
+	}
+
+	//UE_LOG(LogClass, Warning, TEXT("Active"));
+	if (CurrentState == EZombieState::Normal && Pawn->ActorHasTag(TEXT("Player"))&& Player->CurrentHP>0)
 	{
 		CurrentState = EZombieState::Chase;
 		AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
@@ -134,7 +143,20 @@ void AMyZombie::OnSeenPawn(APawn * Pawn)
 	}
 }
 
-void AMyZombie::OnHearedNoise(APawn * Pawn, const FVector & Location, float Volume)
+void AMyZombie::Attack()
 {
+	AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
+	if (AIC)
+	{
+		AActor* Player = Cast<AActor>(AIC->BBComponent->GetValueAsObject(FName(TEXT("Player"))));
+		if (Player)
+		{
+			UGameplayStatics::ApplyDamage(Player, 30.0f, GetController(), this, nullptr);
+		}
+	}
 }
+
+//void AMyZombie::OnHearedNoise(APawn * Pawn, const FVector & Location, float Volume)
+//{
+//}
 

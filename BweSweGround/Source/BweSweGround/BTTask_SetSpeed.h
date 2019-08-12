@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
-#include "MyBTTask_Disapear.generated.h"
+#include "BTTask_SetSpeed.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BWESWEGROUND_API UMyBTTask_Disapear : public UBTTask_BlackboardBase
+class BWESWEGROUND_API UBTTask_SetSpeed : public UBTTask_BlackboardBase
 {
 	GENERATED_BODY()
 public:

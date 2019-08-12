@@ -100,7 +100,11 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::MoveForward(float Value)
 {
-	if (Value != 0 && !bIsMotion)
+	if (!bIsAlive)
+	{
+		return;
+	}
+	if ((Value != 0 && !bIsMotion) || !bIsAlive)
 	{
 		ForwardValue = Value;
 		AddMovementInput(UKismetMathLibrary::GetForwardVector(FRotator(0, GetControlRotation().Yaw, 0)), Value);
@@ -113,6 +117,10 @@ void AMyCharacter::MoveForward(float Value)
 
 void AMyCharacter::MoveRight(float Value)
 {
+	if (!bIsAlive)
+	{
+		return;
+	}
 	if (Value != 0 && !bIsMotion)
 	{
 		RightValue = Value;
@@ -142,6 +150,10 @@ void AMyCharacter::Turn(float Value)
 
 void AMyCharacter::Sprint_Start()
 {
+	if (bIsMotion || !bIsAlive)
+	{
+		return;
+	}
 	if (bIsAim)
 	{
 		Aim_End();
@@ -158,10 +170,13 @@ void AMyCharacter::Sprint_Start()
 
 void AMyCharacter::Sprint_End()
 {
-	bUseControllerRotationYaw = true;
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-	bIsSprint = false;
-	SprintSpeed = 1.0f;
+	if (bIsSprint)
+	{
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		bIsSprint = false;
+		SprintSpeed = 1.0f;
+	}
 }
 
 void AMyCharacter::Aim_Start()
@@ -222,9 +237,19 @@ void AMyCharacter::StopFire()
 	bIsFire = false;
 }
 
+void AMyCharacter::SetDie()
+{
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = false;
+	GetCharacterMovement()->NavAgentProps.bCanJump = false;
+	bIsAlive = false;
+}
+
 void AMyCharacter::Fire()
 {
-	if (!bIsFire)
+	if (!bIsFire || !bIsAlive)
 	{
 		return;
 	}
@@ -349,6 +374,7 @@ FRotator AMyCharacter::GetAimOffset() const
 	return ActorToWorld().InverseTransformVectorNoScale(GetBaseAimRotation().Vector()).Rotation();
 }
 
+
 void AMyCharacter::FireTimerFunction()
 {
 	Fire();
@@ -385,7 +411,8 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 	}
 	else
 	{
-		SetDamage(DamageAmount);
+		CurrentHP -= DamageAmount;
+		//SetDamage(DamageAmount);
 	}
 
 	FString HitName = FString::Printf(TEXT("Hit_%d"), FMath::RandRange(1, 4));
@@ -395,15 +422,15 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 
 	if (CurrentHP == 0)
 	{
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
+		SetDie();
+		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
 		//GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);	//메쉬 물리 체크 켜기.
 		//GetMesh()->SetSimulatePhysics(true);
 		//bIsAlive = false;
 
 		FString DeadName = FString::Printf(TEXT("Death_%d"), FMath::RandRange(1, 3));
-
 		PlayAnimMontage(DeadAnimation, 1.0f, FName(*DeadName));
-		SetLifeSpan(5.0f);
+		//SetLifeSpan(5.0f);
 	}
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);

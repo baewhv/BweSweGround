@@ -38,11 +38,9 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
-		float WalkSpeed = 600.0f;
+		float WalkSpeed = 100.0f;
 
-	float RunSpeed = 1.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
-	float RunSpeedValue = 1.5f;
+	float RunSpeed = 600.0f;
 
 	void Sprint_Start();
 	void Sprint_End();
@@ -74,5 +72,7 @@ public:
 
 	UFUNCTION()			//다른 컴포넌트의 델리게이트 호출방법(in h)
 	void OnSeenPawn(APawn* Pawn);
-	void OnHearedNoise(APawn* Pawn, const FVector& Location, float Volume);
+	//void OnHearedNoise(APawn* Pawn, const FVector& Location, float Volume);
+
+	void Attack();
 };

@@ -51,6 +51,8 @@ public:
 	void StartFire();
 	void StopFire();
 
+	void SetDie();
+
 	void Fire();
 
 	
@@ -58,6 +60,7 @@ public:
 	float WalkSpeed = 600.0f;
 
 	float SprintSpeed = 1.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
 	float SprintSpeedValue = 1.5f;
 	//
@@ -83,6 +86,7 @@ public:
 	//숙이는 것은 기본 기능으로 있음. (Nav CanCrouch
 
 	FTimerHandle FireTimer;
+
 
 	UFUNCTION()
 	void FireTimerFunction();
