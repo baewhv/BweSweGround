@@ -47,6 +47,7 @@ AMyCharacter::AMyCharacter()
 	//앉았을 때 캡슐 콜라이더 수정
 	bIsMotion = false;
 	bIsAlive = true;
+	bIsReloading = false;
 	Tags.Add(TEXT("Character"));
 	Tags.Add(TEXT("Player"));
 }
@@ -96,6 +97,8 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMyCharacter::StartFire);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMyCharacter::StopFire);
+
+	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &AMyCharacter::Reload);
 }
 
 void AMyCharacter::MoveForward(float Value)
@@ -228,8 +231,18 @@ void AMyCharacter::Crouch_End()
 
 void AMyCharacter::StartFire()
 {
-	bIsFire = true;
-	Fire();
+	if (bIsAlive)
+	{
+		bIsFire = true;
+		if (CurrentBullet != 0)
+		{
+			Fire();
+		}
+		else
+		{
+			Stuck();
+		}
+	}
 }
 
 void AMyCharacter::StopFire()
@@ -247,9 +260,24 @@ void AMyCharacter::SetDie()
 	bIsAlive = false;
 }
 
+void AMyCharacter::Reload()
+{
+	if (CurrentBullet != MaxBullet && bIsAlive && !bIsReloading)
+	{
+		bIsReloading = true;
+		PlayAnimMontage(ReloadAnimation, 1.0f, FName(TEXT("Reload_Normal")));
+	}
+}
+
+void AMyCharacter::Reload_End()
+{
+	bIsReloading = false;
+	CurrentBullet = MaxBullet;
+}
+
 void AMyCharacter::Fire()
 {
-	if (!bIsFire || !bIsAlive)
+	if (!bIsFire)
 	{
 		return;
 	}
@@ -257,111 +285,134 @@ void AMyCharacter::Fire()
 	{
 		Sprint_End();
 	}
-
-	FVector CameraLocation;
-	FRotator CameraRotation;
-	int32 SizeX;
-	int32 SizeY;
-	FVector WorldLocation;
-	FVector WorldDirection;
-	FVector TraceStart;
-	FVector TraceEnd;
-	APlayerController* PC = GetController<APlayerController>();
-	if (PC)
+	if (CurrentBullet != 0)
 	{
-		int32 RandX = FMath::RandRange(-3, 3);
-		PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
-		PC->GetViewportSize(SizeX, SizeY);
-		PC->DeprojectScreenPositionToWorld(SizeX / 2 - RandX, SizeY / 2, WorldLocation, WorldDirection);
-		TraceStart = WorldLocation;
-		TraceEnd = TraceStart + (WorldDirection * 90000.0f);	//90미터
-
-
-		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectType;
-		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
-		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
-		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
-
-		TArray<AActor*>IgnoreActors;
-		IgnoreActors.Add(this);
-
-		FHitResult OutHit;
-
-		bool bResult = UKismetSystemLibrary::LineTraceSingleForObjects(
-			GetWorld(),
-			TraceStart,
-			TraceEnd,
-			ObjectType,
-			false,
-			IgnoreActors,
-			EDrawDebugTrace::None,	//그리지 않겠다. / ForDuration -> 일정 시간만
-			OutHit,
-			true,
-			FLinearColor::Red, FLinearColor::Green, 5.0f);
-		if (bResult)
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		int32 SizeX;
+		int32 SizeY;
+		FVector WorldLocation;
+		FVector WorldDirection;
+		FVector TraceStart;
+		FVector TraceEnd;
+		CurrentBullet--;
+		APlayerController* PC = GetController<APlayerController>();
+		if (PC)
 		{
-			//UE_LOG(LogClass, Warning, TEXT("Hit %s"), *OutHit.GetActor()->GetName());
-			UParticleSystem* HitP;
-			UMaterialInterface* DecalP;
+			int32 RandX = FMath::RandRange(-3, 3);
+			PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
+			PC->GetViewportSize(SizeX, SizeY);
+			PC->DeprojectScreenPositionToWorld(SizeX / 2 - RandX, SizeY / 2, WorldLocation, WorldDirection);
+			TraceStart = WorldLocation;
+			TraceEnd = TraceStart + (WorldDirection * 90000.0f);	//90미터
 
-			if (OutHit.GetActor()->ActorHasTag(TEXT("Character")))
+
+			TArray<TEnumAsByte<EObjectTypeQuery>> ObjectType;
+			ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+			ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
+			ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
+
+			TArray<AActor*>IgnoreActors;
+			IgnoreActors.Add(this);
+
+			FHitResult OutHit;
+
+			bool bResult = UKismetSystemLibrary::LineTraceSingleForObjects(
+				GetWorld(),
+				TraceStart,
+				TraceEnd,
+				ObjectType,
+				false,
+				IgnoreActors,
+				EDrawDebugTrace::None,	//그리지 않겠다. / ForDuration -> 일정 시간만
+				OutHit,
+				true,
+				FLinearColor::Red, FLinearColor::Green, 5.0f);
+			if (bResult)
 			{
-				HitP = BloodEffect;
-				DecalP = BulletDecalBlood;
-				//UGameplayStatics::ApplyDamage(OutHit.GetActor(), 10.0f, nullptr, this, nullptr);
+				//UE_LOG(LogClass, Warning, TEXT("Hit %s"), *OutHit.GetActor()->GetName());
+				UParticleSystem* HitP;
+				UMaterialInterface* DecalP;
 
+				if (OutHit.GetActor()->ActorHasTag(TEXT("Character")))
+				{
+					HitP = BloodEffect;
+					DecalP = BulletDecalBlood;
+					//UGameplayStatics::ApplyDamage(OutHit.GetActor(), 10.0f, nullptr, this, nullptr);
+
+				}
+				else
+				{
+					HitP = HitEffect;
+					DecalP = BulletDecal;
+				}
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitP, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
+				UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DecalP, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
+				Decal->SetFadeScreenSize(0.001f);
+
+				//범위 대미지
+				//UGameplayStatics::ApplyRadialDamage(GetWorld(), 30.0f, OutHit.ImpactPoint, 500.0f, nullptr, IgnoreActors, this, GetController(), false, ECollisionChannel::ECC_Visibility);
+
+				//포인트 대미지
+				UGameplayStatics::ApplyPointDamage(OutHit.GetActor(), 10.0f, TraceEnd - TraceStart, OutHit, GetController(), this, nullptr);
+
+				//if (OutHit.GetActor()->ActorHasTag(TEXT("Player")))
+				//{
+				//	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodEffect, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
+				//	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), BulletDecalBlood, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
+				//	Decal->SetFadeScreenSize(0.001f);
+				//	UGameplayStatics::ApplyDamage(OutHit.GetActor(), 10.0f, nullptr, this, nullptr);
+				//}
+				//else
+				//{
+				//	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
+				//	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), BulletDecal, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
+				//	Decal->SetFadeScreenSize(0.001f);
+				//}
 			}
-			else
-			{
-				HitP = HitEffect;
-				DecalP = BulletDecal;
-			}
-			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitP, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
-			UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DecalP, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
-			Decal->SetFadeScreenSize(0.001f);
+		}
+		FRotator PlayerRotation = GetControlRotation();
+		PlayerRotation.Pitch += FMath::RandRange(0.5f, 1.0f);
+		GetController()->SetControlRotation(PlayerRotation);
 
-			//범위 대미지
-			//UGameplayStatics::ApplyRadialDamage(GetWorld(), 30.0f, OutHit.ImpactPoint, 500.0f, nullptr, IgnoreActors, this, GetController(), false, ECollisionChannel::ECC_Visibility);
+		if (FireSound && MuzzleFlash)	//보호 차원
+		{
+			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), FireSound, Weapon->GetSocketLocation(TEXT("Muzzle")));
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, Weapon->GetSocketTransform(TEXT("Muzzle")));
+		}
 
-			//포인트 대미지
-			UGameplayStatics::ApplyPointDamage(OutHit.GetActor(), 10.0f, TraceEnd - TraceStart, OutHit, GetController(), this, nullptr);
+		if (PC)
+		{
+			//PC->PlayerCameraManager->PlayCameraShake(UMyCameraShake::StaticClass());
+			//PC->PlayerCameraManager->PlayWorldCameraShake();	//모든 곳 흔들기?
+			PC->PlayerCameraManager->PlayCameraShake(FireCameraShake);	//카메라 쉐이크를 선택하게끔
+		}
 
-			//if (OutHit.GetActor()->ActorHasTag(TEXT("Player")))
-			//{
-			//	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodEffect, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
-			//	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), BulletDecalBlood, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
-			//	Decal->SetFadeScreenSize(0.001f);
-			//	UGameplayStatics::ApplyDamage(OutHit.GetActor(), 10.0f, nullptr, this, nullptr);
-			//}
-			//else
-			//{
-			//	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
-			//	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), BulletDecal, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
-			//	Decal->SetFadeScreenSize(0.001f);
-			//}
+		if (bIsFire)
+		{
+			GetWorldTimerManager().SetTimer(FireTimer, this, &AMyCharacter::FireTimerFunction, 0.12);
 		}
 	}
-	FRotator PlayerRotation = GetControlRotation();
-	PlayerRotation.Pitch += FMath::RandRange(0.5f,1.0f);
-	GetController()->SetControlRotation(PlayerRotation);
-
-	if (FireSound && MuzzleFlash)	//보호 차원
+	else
+	{
+		Stuck();
+	}
+}
+void AMyCharacter::Stuck()
+{
+	if (!bIsFire)
+	{
+		return;
+	}
+	if (bIsSprint)
+	{
+		Sprint_End();
+	}
+	if (StuckSound)	//보호 차원
 	{
 		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), FireSound, Weapon->GetSocketLocation(TEXT("Muzzle")));
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, Weapon->GetSocketTransform(TEXT("Muzzle")));
 	}
-
-	if (PC)
-	{
-		//PC->PlayerCameraManager->PlayCameraShake(UMyCameraShake::StaticClass());
-		//PC->PlayerCameraManager->PlayWorldCameraShake();	//모든 곳 흔들기?
-		PC->PlayerCameraManager->PlayCameraShake(FireCameraShake);	//카메라 쉐이크를 선택하게끔
-	}
-
-	if (bIsFire)
-	{
-		GetWorldTimerManager().SetTimer(FireTimer, this, &AMyCharacter::FireTimerFunction, 0.12);
-	}
+	bIsFire = false;
 }
 
 
@@ -417,11 +468,12 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 
 	FString HitName = FString::Printf(TEXT("Hit_%d"), FMath::RandRange(1, 4));
 	PlayAnimMontage(HitAnimation, 1.0f, FName(*HitName));
-
+	bIsReloading = false;
 	CurrentHP = FMath::Clamp<float>(CurrentHP, 0, MaxHP);	//체력을 보정(-로 떨어져도 0으로 고정)
 
 	if (CurrentHP == 0)
 	{
+		bIsReloading = false;
 		SetDie();
 		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
 		//GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);	//메쉬 물리 체크 켜기.

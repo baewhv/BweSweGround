@@ -25,6 +25,7 @@ void UMyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		AimYaw = Pawn->GetAimOffset().Yaw;
 		AimPitch = Pawn->GetAimOffset().Pitch;
 		FireAlpha = Pawn->bIsFire ? 1 : 0;
+		bIsReloading = Pawn->bIsReloading;
 	}
 }
 
@@ -34,7 +35,7 @@ void UMyAnimInstance::AnimNotify_StartMotion(UAnimNotify * Notify)
 	if (Pawn && Pawn->IsValidLowLevel())
 	{
 		Pawn->bIsMotion = true;
-		UE_LOG(LogClass, Warning, TEXT("Start Motion"));
+		//UE_LOG(LogClass, Warning, TEXT("Start Motion"));
 	}
 }
 
@@ -44,6 +45,6 @@ void UMyAnimInstance::AnimNotify_EndMotion(UAnimNotify * Notify)
 	if (Pawn && Pawn->IsValidLowLevel())
 	{
 		Pawn->bIsMotion = false;
-		UE_LOG(LogClass, Warning, TEXT("End Motion"));
+		//UE_LOG(LogClass, Warning, TEXT("End Motion"));
 	}
 }

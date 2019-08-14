@@ -5,6 +5,8 @@
 #include "Engine/Canvas.h"
 #include "Engine/StreamableManager.h"
 #include "Engine/Texture2D.h"
+#include "Player/MyCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 void AMyHUD::BeginPlay()
 {
@@ -25,6 +27,22 @@ void AMyHUD::DrawHUD()
 
 	//DrawLine(Canvas->SizeX / 2 - Ruler, Canvas->SizeY / 2, Canvas->SizeX / 2 + Ruler, Canvas->SizeY / 2, FColor::Red);
 	//DrawLine(Canvas->SizeX / 2, Canvas->SizeY / 2 - Ruler, Canvas->SizeX / 2, Canvas->SizeY / 2 + Ruler, FColor::Red);
+	
+	//AMyCharacter* Player = Cast<AMyCharacter>(GetOwner());
+	
+	AMyCharacter* Player = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	if (Player)
+	{
+		FString string = FString::Printf(TEXT("HP : %.f\nAmmo : %d"), Player->CurrentHP, Player->CurrentBullet);
+		DrawText(string, FLinearColor::Blue, Canvas->SizeX/2 , Canvas->SizeY / 2);
+	}
+	else
+	{
+		UE_LOG(LogClass, Warning, TEXT("Get Player Component Fail"));
+	}
+
+	
 
 	if (Crosshair)
 	{

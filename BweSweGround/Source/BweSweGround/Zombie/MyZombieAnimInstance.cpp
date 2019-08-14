@@ -16,3 +16,4 @@ void UMyZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		Speed = Pawn->GetCharacterMovement()->Velocity.Size();
 	}
 }
+

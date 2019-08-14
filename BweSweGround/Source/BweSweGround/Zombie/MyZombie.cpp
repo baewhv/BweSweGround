@@ -36,7 +36,7 @@ void AMyZombie::BeginPlay()
 	Super::BeginPlay();
 	
 	CurrentHP = MaxHP;
-
+	bIsAttack = false;
 	PawnSensing->OnSeePawn.AddDynamic(this, &AMyZombie::OnSeenPawn);		//다른 컴포넌트의 델리게이트 호출방법(in cpp)
 	//PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
 
@@ -99,9 +99,11 @@ float AMyZombie::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent
 	{
 		UE_LOG(LogClass, Warning, TEXT("Get RadialDamage"));
 	}
-	
-	FString HitName = FString::Printf(TEXT("Hit%d"), FMath::RandRange(1, 2));
-	PlayAnimMontage(HitAnimation, 1.0f, FName(*HitName));
+	if (!bIsAttack)
+	{
+		FString HitName = FString::Printf(TEXT("Hit%d"), FMath::RandRange(1, 2));
+		PlayAnimMontage(HitAnimation, 1.0f, FName(*HitName));
+	}
 
 	CurrentHP = FMath::Clamp<float>(CurrentHP, 0, MaxHP);	//체력을 보정(-로 떨어져도 0으로 고정)
 

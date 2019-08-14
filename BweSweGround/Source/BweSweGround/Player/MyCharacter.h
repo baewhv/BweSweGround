@@ -53,7 +53,11 @@ public:
 
 	void SetDie();
 
+	void Reload();
+	void Reload_End();
+
 	void Fire();
+	void Stuck();
 
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
@@ -81,6 +85,7 @@ public:
 	uint8 bIsAlive : 1;
 
 	uint8 bIsFire : 1;
+	uint8 bIsReloading : 1;
 
 	FRotator GetAimOffset() const;
 	//숙이는 것은 기본 기능으로 있음. (Nav CanCrouch
@@ -99,6 +104,8 @@ public:
 	class UParticleSystem* MuzzleFlash;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
 	class USoundBase* FireSound;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+	class USoundBase* StuckSound;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
 	class UMaterialInterface* BulletDecal;
@@ -132,4 +139,11 @@ public:
 	class UAnimMontage* DeadAnimation;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UAnimMontage* HitAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UAnimMontage* ReloadAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int CurrentBullet = 30;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int MaxBullet = 30;
 };

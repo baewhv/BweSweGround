@@ -36,6 +36,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	uint8 bIsAlive : 1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	uint8 bIsReloading : 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float FireAlpha;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float AimYaw;

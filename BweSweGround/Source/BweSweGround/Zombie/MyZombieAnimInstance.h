@@ -25,5 +25,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Speed;
+
 	
 };

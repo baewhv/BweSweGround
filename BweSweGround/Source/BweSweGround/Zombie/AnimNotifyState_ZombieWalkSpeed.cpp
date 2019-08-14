@@ -12,7 +12,9 @@ void UAnimNotifyState_ZombieWalkSpeed::NotifyBegin(USkeletalMeshComponent * Mesh
 	AMyZombie* Zombie = Cast<AMyZombie>(MeshComp->GetOwner());
 	if (Zombie)
 	{
-		Zombie->GetCharacterMovement()->MaxWalkSpeed = 1.0f;
+		//Zombie->GetCharacterMovement()->MaxWalkSpeed = 1.0f;
+		Zombie->GetCharacterMovement()->MaxWalkSpeed = Zombie->WalkSpeed;
+
 	}
 }
 
@@ -25,8 +27,10 @@ void UAnimNotifyState_ZombieWalkSpeed::NotifyEnd(USkeletalMeshComponent * MeshCo
 {
 	Super::NotifyEnd(MeshComp, Animation);
 	AMyZombie* Zombie = Cast<AMyZombie>(MeshComp->GetOwner());
-	if (Zombie)
+	if (Zombie && Zombie->CurrentState == EZombieState::Normal)
 	{
-		Zombie->GetCharacterMovement()->MaxWalkSpeed = Zombie->WalkSpeed;
+		//Zombie->GetCharacterMovement()->MaxWalkSpeed = Zombie->WalkSpeed;
+		Zombie->GetCharacterMovement()->MaxWalkSpeed = 1.0f;
+		//UE_LOG(LogClass, Warning, TEXT("SetWalkEnd! Current Speed : %f, Current State : %d"), Zombie->GetCharacterMovement()->MaxWalkSpeed, (int)Zombie->CurrentState);
 	}
 }
