@@ -10,6 +10,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Player/MyCharacter.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Animation/AnimInstance.h"
 
 // Sets default values
 AMyZombie::AMyZombie()
@@ -46,7 +48,27 @@ void AMyZombie::BeginPlay()
 void AMyZombie::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//UE_LOG(LogClass, Warning, TEXT("%d"), PawnSensing->bSeePawns);
+	//UE_LOG(LogClass, Warning, TEXT("Dot"));
+
+	//AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
+	//if (AIC)
+	//{
+	//	AActor* Player = Cast<AActor>(AIC->BBComponent->GetValueAsObject(FName(TEXT("Player"))));
+	//	if (Player)
+	//	{
+	//		//float Distance = FVector::Distance(GetActorLocation(), Player->GetActorLocation());
+	//		//FVector PlayerVector = Player->GetActorLocation() - GetActorLocation();
+	//		//float aa = UKismetMathLibrary::DotProduct2D(FrontVector, PlayerVector);
+	//		;
+	//		float Dot = GetMesh()->GetAnimInstance()->CalculateDirection((Player->GetActorLocation() - GetActorLocation()).GetSafeNormal(), GetActorRotation());
+	//		/*if (Distance < 200.0f && Dot > 0.0f)
+	//		{
+	//			UGameplayStatics::ApplyDamage(Player, 30.0f, GetController(), this, nullptr);
+	//		}*/
+	//		UE_LOG(LogClass, Warning, TEXT("Dot : %f"), UKismetMathLibrary::Abs(Dot/180.0f));
+	//	}
+	//}
+	
 }
 
 // Called to bind functionality to input
@@ -153,7 +175,12 @@ void AMyZombie::Attack()
 		AActor* Player = Cast<AActor>(AIC->BBComponent->GetValueAsObject(FName(TEXT("Player"))));
 		if (Player)
 		{
-			UGameplayStatics::ApplyDamage(Player, 30.0f, GetController(), this, nullptr);
+			float Distance = FVector::Distance(GetActorLocation(), Player->GetActorLocation());
+			float Dot = GetMesh()->GetAnimInstance()->CalculateDirection(Player->GetActorLocation() - GetActorLocation(), GetActorRotation());
+			if (Distance < 200.0f && UKismetMathLibrary::Abs(Dot) < 90.0f)
+			{
+				UGameplayStatics::ApplyDamage(Player, 30.0f, GetController(), this, nullptr);
+			}
 		}
 	}
 }

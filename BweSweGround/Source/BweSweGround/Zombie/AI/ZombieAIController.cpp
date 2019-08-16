@@ -26,15 +26,11 @@ void AZombieAIController::OnPossess(APawn * InPawn)
 		//BBComponent->SetValueAsVector(FName(TEXT("Target")),FVector(100,100,0));
 		SetCurrentState(EZombieState::Normal);
 	}
-
 }
 
 void AZombieAIController::OnUnPossess()
 {
 	BTComponent->StopTree();
-
-
-
 	Super::OnUnPossess();	//끝에 호출할것.
 }
 

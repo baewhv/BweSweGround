@@ -165,6 +165,10 @@ void AMyCharacter::Sprint_Start()
 	{
 		UnCrouch();
 	}
+	if (bIsReloading)
+	{
+		bIsReloading = false;
+	}
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsSprint = true;
@@ -264,6 +268,10 @@ void AMyCharacter::Reload()
 {
 	if (CurrentBullet != MaxBullet && bIsAlive && !bIsReloading)
 	{
+		if (bIsSprint)
+		{
+			Sprint_End();
+		}
 		bIsReloading = true;
 		PlayAnimMontage(ReloadAnimation, 1.0f, FName(TEXT("Reload_Normal")));
 	}
@@ -398,6 +406,7 @@ void AMyCharacter::Fire()
 		Stuck();
 	}
 }
+
 void AMyCharacter::Stuck()
 {
 	if (!bIsFire)
@@ -514,7 +523,7 @@ FVector AMyCharacter::GetSpringArmPosition() const
 	return SpringArm->GetRelativeTransform().GetLocation();
 }
 
-void AMyCharacter::SetSpringArmPosition(FVector  NewPosition)
+void AMyCharacter::SetSpringArmPosition(FVector NewPosition)
 {
 	SpringArm->SetRelativeLocation(NewPosition);
 }

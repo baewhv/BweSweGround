@@ -20,6 +20,7 @@ EBTNodeResult::Type UBTTaskNode_ChangeSpeed::ExecuteTask(UBehaviorTreeComponent 
 	{
 		Zombie->GetCharacterMovement()->MaxWalkSpeed = Zombie->WalkSpeed;
 	}
+
 	else if (CurrentSpeed == EZombieSpeed::Run)
 	{
 		Zombie->GetCharacterMovement()->MaxWalkSpeed = Zombie->RunSpeed;

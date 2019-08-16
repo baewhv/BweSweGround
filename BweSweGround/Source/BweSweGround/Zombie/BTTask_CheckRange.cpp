@@ -12,7 +12,7 @@ EBTNodeResult::Type UBTTask_CheckRange::ExecuteTask(UBehaviorTreeComponent & Own
 	AMyZombie* Zombie = Cast<AMyZombie>(OwnerComp.GetAIOwner()->GetPawn());
 	AActor* Player = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(GetSelectedBlackboardKey()));
 
-	if (!Player || !Zombie)
+	if ((!Player || !Zombie))
 	{
 		return EBTNodeResult::Failed;
 	}

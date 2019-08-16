@@ -16,7 +16,7 @@ void UBTService_CheckPlayerAlive::TickNode(UBehaviorTreeComponent & OwnerComp, u
 	AZombieAIController* AIC = Cast<AZombieAIController>(OwnerComp.GetAIOwner());
 	if (AIC)
 	{
-		AMyCharacter* Player =Cast<AMyCharacter>(AIC->BBComponent->GetValueAsObject(FName(TEXT("Player"))));
+		AMyCharacter* Player = Cast<AMyCharacter>(AIC->BBComponent->GetValueAsObject(FName(TEXT("Player"))));
 		if (Player)
 		{
 			if (Player->CurrentHP <= 0)

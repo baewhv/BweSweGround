@@ -10,7 +10,7 @@ void UAnimNotifyState_ZombieWalkSpeed::NotifyBegin(USkeletalMeshComponent * Mesh
 {
 	Super::NotifyBegin(MeshComp, Animation, TotalDuration);
 	AMyZombie* Zombie = Cast<AMyZombie>(MeshComp->GetOwner());
-	if (Zombie)
+	if (Zombie && Zombie->CurrentState == EZombieState::Normal)
 	{
 		//Zombie->GetCharacterMovement()->MaxWalkSpeed = 1.0f;
 		Zombie->GetCharacterMovement()->MaxWalkSpeed = Zombie->WalkSpeed;
