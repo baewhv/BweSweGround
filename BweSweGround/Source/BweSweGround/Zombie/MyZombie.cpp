@@ -26,6 +26,7 @@ AMyZombie::AMyZombie()
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	Tags.Add(TEXT("Character"));
+	Tags.Add(TEXT("Enemy"));
 
 	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensing"));
 	
@@ -39,6 +40,7 @@ void AMyZombie::BeginPlay()
 	
 	CurrentHP = MaxHP;
 	bIsAttack = false;
+	bIsStealthKilled = true;
 	PawnSensing->OnSeePawn.AddDynamic(this, &AMyZombie::OnSeenPawn);		//다른 컴포넌트의 델리게이트 호출방법(in cpp)
 	//PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
 

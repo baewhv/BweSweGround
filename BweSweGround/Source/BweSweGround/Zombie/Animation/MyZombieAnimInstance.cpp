@@ -2,7 +2,7 @@
 
 
 #include "MyZombieAnimInstance.h"
-#include "MyZombie.h"
+#include "Zombie/MyZombie.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 void UMyZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
@@ -14,6 +14,7 @@ void UMyZombieAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	{
 		CurrentState = Pawn->CurrentState;
 		Speed = Pawn->GetCharacterMovement()->Velocity.Size();
+		bIsStealthKilled = Pawn->bIsStealthKilled;
 	}
 }
 

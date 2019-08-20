@@ -424,7 +424,6 @@ void AMyCharacter::Stuck()
 	bIsFire = false;
 }
 
-
 FRotator AMyCharacter::GetAimOffset() const
 {
 	//FVector AimDirWS = GetBaseAimRotation().Vector();
@@ -433,7 +432,6 @@ FRotator AMyCharacter::GetAimOffset() const
 
 	return ActorToWorld().InverseTransformVectorNoScale(GetBaseAimRotation().Vector()).Rotation();
 }
-
 
 void AMyCharacter::FireTimerFunction()
 {

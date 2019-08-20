@@ -2,7 +2,7 @@
 
 
 #include "MyAnimInstance.h"
-#include "MyCharacter.h"
+#include "Player/MyCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 

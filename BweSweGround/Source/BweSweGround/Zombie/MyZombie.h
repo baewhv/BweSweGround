@@ -48,6 +48,10 @@ public:
 	uint8 bIsSprint : 1;
 
 	uint8 bIsAttack : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	uint8 bIsStealthKilled : 1;
+
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)override;
 
 

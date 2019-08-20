@@ -42,7 +42,6 @@ void AMyHUD::DrawHUD()
 		UE_LOG(LogClass, Warning, TEXT("Get Player Component Fail"));
 	}
 
-	
 
 	if (Crosshair)
 	{

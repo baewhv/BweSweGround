@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
 
-#include "MyZombie.h"
+#include "Zombie/MyZombie.h"
 
 #include "MyZombieAnimInstance.generated.h"
 
@@ -26,5 +26,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Speed;
 
-	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	uint8 bIsStealthKilled : 1;
 };
