@@ -53,6 +53,7 @@ public:
 	uint8 bIsStealthKilled : 1;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)override;
+	void SetDie();
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -77,7 +78,7 @@ public:
 
 	UFUNCTION()			//다른 컴포넌트의 델리게이트 호출방법(in h)
 	void OnSeenPawn(APawn* Pawn);
-	//void OnHearedNoise(APawn* Pawn, const FVector& Location, float Volume);
+	void OnHearedNoise(APawn* Pawn, const FVector& Location, float Volume);
 
 	void Attack();
 };

@@ -40,7 +40,7 @@ void AMyZombie::BeginPlay()
 	
 	CurrentHP = MaxHP;
 	bIsAttack = false;
-	bIsStealthKilled = true;
+	bIsStealthKilled = false;
 	PawnSensing->OnSeePawn.AddDynamic(this, &AMyZombie::OnSeenPawn);		//다른 컴포넌트의 델리게이트 호출방법(in cpp)
 	//PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
 
@@ -121,7 +121,7 @@ float AMyZombie::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent
 	}
 	else
 	{
-		UE_LOG(LogClass, Warning, TEXT("Get RadialDamage"));
+		UE_LOG(LogClass, Warning, TEXT("Get Damage"));
 	}
 	if (!bIsAttack)
 	{
@@ -133,18 +133,23 @@ float AMyZombie::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent
 
 	if (CurrentHP == 0)
 	{
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
-
-		CurrentState = EZombieState::Dead;
-
-		AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
-		if (AIC)
-		{
-			AIC->SetCurrentState(CurrentState);
-		}
+		SetDie();
 	}
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void AMyZombie::SetDie()
+{
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
+
+	CurrentState = EZombieState::Dead;
+
+	AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
+	if (AIC)
+	{
+		AIC->SetCurrentState(CurrentState);
+	}
 }
 
 
@@ -187,7 +192,18 @@ void AMyZombie::Attack()
 	}
 }
 
-//void AMyZombie::OnHearedNoise(APawn * Pawn, const FVector & Location, float Volume)
-//{
-//}
+void AMyZombie::OnHearedNoise(APawn * Pawn, const FVector & Location, float Volume)
+{
+
+	if (CurrentState == EZombieState::Normal)
+	{
+		CurrentState = EZombieState::Chase;
+		AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
+		if (AIC)
+		{
+			AIC->SetCurrentState(CurrentState);
+			AIC->SetTargetPlayer(Pawn);
+		}
+	}
+}
 

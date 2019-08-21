@@ -20,4 +20,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UTexture2D* Crosshair;
+
+	
 };

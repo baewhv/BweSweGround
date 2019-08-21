@@ -38,6 +38,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	uint8 bIsReloading : 1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	uint8 bIsStealthKill : 1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float FireAlpha;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float AimYaw;
@@ -49,8 +51,5 @@ public:
 
 	UFUNCTION()
 	void AnimNotify_EndMotion(UAnimNotify* Notify);
-
-
-
 
 };

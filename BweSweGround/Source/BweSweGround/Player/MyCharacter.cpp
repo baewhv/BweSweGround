@@ -18,6 +18,8 @@
 #include "Components/DecalComponent.h" 
 #include "Components/CapsuleComponent.h"
 #include "MyCameraShake.h"
+#include "Animation/AnimInstance.h"
+#include "Zombie/MyZombie.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -48,6 +50,7 @@ AMyCharacter::AMyCharacter()
 	bIsMotion = false;
 	bIsAlive = true;
 	bIsReloading = false;
+	bIsStealthKill = false;
 	Tags.Add(TEXT("Character"));
 	Tags.Add(TEXT("Player"));
 }
@@ -71,6 +74,7 @@ void AMyCharacter::Tick(float DeltaTime)
 
 	//FString Temp = FString::Printf(TEXT("Pos (%f, %f)"),ForwardValue, RightValue);
 	//UKismetSystemLibrary::PrintString(GetWorld(), Temp);
+	TraceObject();
 }
 
 // Called to bind functionality to input
@@ -99,15 +103,74 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Released, this, &AMyCharacter::StopFire);
 
 	PlayerInputComponent->BindAction(TEXT("Reload"), IE_Pressed, this, &AMyCharacter::Reload);
+
+	PlayerInputComponent->BindAction(TEXT("Interaction"), IE_Pressed, this, &AMyCharacter::Interacted);
+}
+
+void AMyCharacter::TraceObject()
+{
+	APlayerController* PC = GetController<APlayerController>();
+	if (PC)
+	{
+		int32 RandX = FMath::RandRange(-3, 3);
+		PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
+		PC->GetViewportSize(SizeX, SizeY);
+		PC->DeprojectScreenPositionToWorld(SizeX / 2, SizeY / 2, WorldLocation, WorldDirection);
+		TraceStart = WorldLocation;
+		TraceEnd = TraceStart + (WorldDirection * 300.0f);	//2미터
+
+		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectType;
+		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
+
+		TArray<AActor*>IgnoreActors;
+		IgnoreActors.Add(this);
+
+		FHitResult OutHit;
+
+		bool bResult = UKismetSystemLibrary::LineTraceSingleForObjects(
+			GetWorld(),
+			TraceStart,
+			TraceEnd,
+			ObjectType,
+			false,
+			IgnoreActors,
+			EDrawDebugTrace::None,	//그리지 않겠다. / ForDuration -> 일정 시간만
+			OutHit,
+			true,
+			FLinearColor::Red, FLinearColor::Green, 5.0f);
+		if (bResult)
+		{
+			//UE_LOG(LogClass, Warning, TEXT("Hit %s"), *OutHit.GetActor()->GetName());
+
+			if (OutHit.GetActor()->ActorHasTag(TEXT("Enemy")))
+			{
+				InteractionType = EInteraction::Enemy;
+				float Distance = FVector::Distance(GetActorLocation(), OutHit.GetActor()->GetActorLocation());
+				AMyZombie* Enemy = Cast<AMyZombie>(OutHit.GetActor());
+				float Dot = Enemy->GetMesh()->GetAnimInstance()->CalculateDirection(GetActorLocation() - Enemy->GetActorLocation(), Enemy->GetActorRotation());
+				//UE_LOG(LogClass, Warning, TEXT("Dist %f / Dot %f"), Distance, UKismetMathLibrary::Abs(Dot));
+				if (Distance < 200.0f && UKismetMathLibrary::Abs(Dot) > 90.0f)
+				{
+					InteractionType = EInteraction::Stealth;
+					InteractTarget = OutHit.GetActor();
+				}
+			}
+		}
+		else
+		{
+			InteractionType = EInteraction::None;
+			InteractTarget = nullptr;
+		}
+	}
 }
 
 void AMyCharacter::MoveForward(float Value)
 {
-	if (!bIsAlive)
+	if (!bIsAlive || bIsStealthKill)
 	{
 		return;
 	}
-	if ((Value != 0 && !bIsMotion) || !bIsAlive)
+	if ((Value != 0 && (!bIsMotion )) || !bIsAlive )
 	{
 		ForwardValue = Value;
 		AddMovementInput(UKismetMathLibrary::GetForwardVector(FRotator(0, GetControlRotation().Yaw, 0)), Value);
@@ -120,11 +183,11 @@ void AMyCharacter::MoveForward(float Value)
 
 void AMyCharacter::MoveRight(float Value)
 {
-	if (!bIsAlive)
+	if (!bIsAlive || bIsStealthKill)
 	{
 		return;
 	}
-	if (Value != 0 && !bIsMotion)
+	if (Value != 0 && (!bIsMotion))
 	{
 		RightValue = Value;
 		AddMovementInput(UKismetMathLibrary::GetRightVector(FRotator(0, GetControlRotation().Yaw, 0)), Value);
@@ -153,7 +216,7 @@ void AMyCharacter::Turn(float Value)
 
 void AMyCharacter::Sprint_Start()
 {
-	if (bIsMotion || !bIsAlive)
+	if (bIsMotion || !bIsAlive || bIsStealthKill)
 	{
 		return;
 	}
@@ -295,21 +358,13 @@ void AMyCharacter::Fire()
 	}
 	if (CurrentBullet != 0)
 	{
-		FVector CameraLocation;
-		FRotator CameraRotation;
-		int32 SizeX;
-		int32 SizeY;
-		FVector WorldLocation;
-		FVector WorldDirection;
-		FVector TraceStart;
-		FVector TraceEnd;
 		CurrentBullet--;
 		APlayerController* PC = GetController<APlayerController>();
 		if (PC)
 		{
 			int32 RandX = FMath::RandRange(-3, 3);
-			PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
-			PC->GetViewportSize(SizeX, SizeY);
+			//PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
+			//PC->GetViewportSize(SizeX, SizeY);
 			PC->DeprojectScreenPositionToWorld(SizeX / 2 - RandX, SizeY / 2, WorldLocation, WorldDirection);
 			TraceStart = WorldLocation;
 			TraceEnd = TraceStart + (WorldDirection * 90000.0f);	//90미터
@@ -424,6 +479,54 @@ void AMyCharacter::Stuck()
 	bIsFire = false;
 }
 
+void AMyCharacter::Interacted()
+{
+	switch (InteractionType)
+	{
+	case EInteraction::Enemy:
+		UE_LOG(LogClass, Warning, TEXT("Enemy"));
+		break;
+	case EInteraction::None:
+		UE_LOG(LogClass, Warning, TEXT("None"));
+		break;
+	case EInteraction::Stealth:
+		UE_LOG(LogClass, Warning, TEXT("Stealth"));
+		StartStealthKill();
+		break;
+	}
+	
+}
+
+void AMyCharacter::StartStealthKill()
+{
+	if (!bIsStealthKill)
+	{
+		bIsCrouched = false;
+		bIsSprint = false;
+		bIsAim = false;
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		AMyZombie* Enemy = Cast<AMyZombie>(InteractTarget);
+		FVector NewLocation = FVector(GetActorLocation() + GetActorForwardVector() * 50.0f);
+		bIsStealthKill = true;
+		Enemy->SetActorRotation(GetActorRotation());
+		Enemy->SetActorLocation(NewLocation);
+		Enemy->bIsStealthKilled = true;
+		Enemy->SetDie();
+	}
+}
+
+void AMyCharacter::EndStealthKill()
+{
+	UE_LOG(LogClass, Warning, TEXT("EndStelthKill! %d"), bIsStealthKill);
+	if (bIsStealthKill)
+	{
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		bIsStealthKill = false;
+	}
+}
+
 FRotator AMyCharacter::GetAimOffset() const
 {
 	//FVector AimDirWS = GetBaseAimRotation().Vector();
@@ -497,7 +600,6 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 
 void AMyCharacter::SetDamage(float damage)
 {
-
 	if (CurrentHP <= damage)
 	{
 		CurrentHP = 0.0f;

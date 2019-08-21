@@ -24,6 +24,7 @@ void UMyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		Yaw = CalculateDirection(Pawn->GetCharacterMovement()->Velocity, Pawn->GetActorRotation());
 		AimYaw = Pawn->GetAimOffset().Yaw;
 		AimPitch = Pawn->GetAimOffset().Pitch;
+		bIsStealthKill = Pawn->bIsStealthKill;
 		FireAlpha = Pawn->bIsFire ? 1 : 0;
 		bIsReloading = Pawn->bIsReloading;
 	}
@@ -48,3 +49,4 @@ void UMyAnimInstance::AnimNotify_EndMotion(UAnimNotify * Notify)
 		//UE_LOG(LogClass, Warning, TEXT("End Motion"));
 	}
 }
+

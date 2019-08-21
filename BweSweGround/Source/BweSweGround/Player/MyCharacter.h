@@ -5,7 +5,16 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "MyCharacter.generated.h"
-#define DEFAULT 1.0f;
+
+UENUM(BlueprintType)
+enum class EInteraction :uint8
+{
+	None = 0	UMETA(DisplayName = "None"),
+	Enemy = 1	UMETA(DisplayName = "Enemy"),
+	Stealth = 2	UMETA(DisplayName = "Stealth"),
+	Object = 3	UMETA(DisplayName = "Object"),
+
+};
 
 UCLASS()
 class BWESWEGROUND_API AMyCharacter : public ACharacter
@@ -34,6 +43,10 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	class UMyWeaponComponent* Weapon;
 
+	EInteraction InteractionType = EInteraction::None;
+
+	void TraceObject();
+
 	void MoveForward(float Value);
 	void MoveRight(float Value);
 	void LookUp(float Value);
@@ -59,6 +72,20 @@ public:
 	void Fire();
 	void Stuck();
 
+	void Interacted();
+	void StartStealthKill();
+	void EndStealthKill();
+
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	int32 SizeX;
+	int32 SizeY;
+	FVector WorldLocation;
+	FVector WorldDirection;
+	FVector TraceStart;
+	FVector TraceEnd;
+
+	AActor* InteractTarget;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
 	float WalkSpeed = 600.0f;
@@ -86,6 +113,8 @@ public:
 
 	uint8 bIsFire : 1;
 	uint8 bIsReloading : 1;
+
+	uint8 bIsStealthKill : 1;
 
 	FRotator GetAimOffset() const;
 	//숙이는 것은 기본 기능으로 있음. (Nav CanCrouch
