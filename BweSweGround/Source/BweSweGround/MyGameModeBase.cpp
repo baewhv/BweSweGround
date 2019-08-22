@@ -25,7 +25,21 @@ void AMyGameModeBase::CheckTargetCount()
 {
 	if (GetTargetCount() == 0)
 	{
-		UGameplayStatics::OpenLevel(GetWorld(), TEXT("Scene_01"));
+		FString mapName = GetWorld()->GetMapName().Mid(GetWorld()->StreamingLevelsPrefix.Len());
+		UE_LOG(LogClass, Warning, TEXT("%s"), *mapName);
+		if (mapName == TEXT("Scene01"))
+		{
+			
+			UGameplayStatics::OpenLevel(GetWorld(), TEXT("Scene02"));
+		}
+		else if (mapName == TEXT("Scene02"))
+		{
+			UGameplayStatics::OpenLevel(GetWorld(), TEXT("Scene03"));
+		}
+		else
+		{
+			UGameplayStatics::OpenLevel(GetWorld(), TEXT("Scene01"));
+		}
 	}
 
 }

@@ -24,6 +24,7 @@
 // Sets default values
 AMyCharacter::AMyCharacter()
 {
+
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -75,6 +76,8 @@ void AMyCharacter::Tick(float DeltaTime)
 	//FString Temp = FString::Printf(TEXT("Pos (%f, %f)"),ForwardValue, RightValue);
 	//UKismetSystemLibrary::PrintString(GetWorld(), Temp);
 	TraceObject();
+	FString mapName = GetWorld()->GetMapName();
+	UE_LOG(LogClass, Warning, TEXT("HaHa_%s"), *mapName);
 }
 
 // Called to bind functionality to input
@@ -329,7 +332,7 @@ void AMyCharacter::SetDie()
 
 void AMyCharacter::Reload()
 {
-	if (CurrentBullet != MaxBullet && bIsAlive && !bIsReloading)
+	if ((CurrentBullet != MaxBullet) && bIsAlive && !bIsReloading)
 	{
 		if (bIsSprint)
 		{
@@ -348,7 +351,7 @@ void AMyCharacter::Reload_End()
 
 void AMyCharacter::Fire()
 {
-	if (!bIsFire)
+	if (!bIsFire || bIsReloading)
 	{
 		return;
 	}
@@ -396,7 +399,7 @@ void AMyCharacter::Fire()
 				//UE_LOG(LogClass, Warning, TEXT("Hit %s"), *OutHit.GetActor()->GetName());
 				UParticleSystem* HitP;
 				UMaterialInterface* DecalP;
-
+				
 				if (OutHit.GetActor()->ActorHasTag(TEXT("Character")))
 				{
 					HitP = BloodEffect;
@@ -507,7 +510,7 @@ void AMyCharacter::StartStealthKill()
 		bUseControllerRotationYaw = false;
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 		AMyZombie* Enemy = Cast<AMyZombie>(InteractTarget);
-		FVector NewLocation = FVector(GetActorLocation() + GetActorForwardVector() * 50.0f);
+		FVector NewLocation = FVector(GetActorLocation() + (GetActorForwardVector() * 50.0f) + (GetActorRightVector() * -20.0f));
 		bIsStealthKill = true;
 		Enemy->SetActorRotation(GetActorRotation());
 		Enemy->SetActorLocation(NewLocation);

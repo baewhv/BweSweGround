@@ -156,7 +156,7 @@ void AMyZombie::SetDie()
 void AMyZombie::OnSeenPawn(APawn * Pawn)
 {
 	AMyCharacter* Player = Cast<AMyCharacter>(Pawn);
-	if (!Player)
+	if (!Player || CurrentState == EZombieState::Dead)
 	{
 		return;
 	}

@@ -112,6 +112,7 @@ public:
 	uint8 bIsAlive : 1;
 
 	uint8 bIsFire : 1;
+	UPROPERTY(VisibleAnywhere)
 	uint8 bIsReloading : 1;
 
 	uint8 bIsStealthKill : 1;
