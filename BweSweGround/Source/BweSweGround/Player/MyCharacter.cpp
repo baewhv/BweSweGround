@@ -76,8 +76,7 @@ void AMyCharacter::Tick(float DeltaTime)
 	//FString Temp = FString::Printf(TEXT("Pos (%f, %f)"),ForwardValue, RightValue);
 	//UKismetSystemLibrary::PrintString(GetWorld(), Temp);
 	TraceObject();
-	FString mapName = GetWorld()->GetMapName();
-	UE_LOG(LogClass, Warning, TEXT("HaHa_%s"), *mapName);
+	
 }
 
 // Called to bind functionality to input
