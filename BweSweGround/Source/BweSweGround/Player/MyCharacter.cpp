@@ -360,6 +360,7 @@ void AMyCharacter::Fire()
 	}
 	if (CurrentBullet != 0)
 	{
+		MakeNoise(1.0f, this, GetActorLocation());
 		CurrentBullet--;
 		APlayerController* PC = GetController<APlayerController>();
 		if (PC)
@@ -457,6 +458,8 @@ void AMyCharacter::Fire()
 		{
 			GetWorldTimerManager().SetTimer(FireTimer, this, &AMyCharacter::FireTimerFunction, 0.12);
 		}
+
+		
 	}
 	else
 	{

@@ -77,8 +77,10 @@ public:
 	class UPawnSensingComponent* PawnSensing;
 
 	UFUNCTION()			//다른 컴포넌트의 델리게이트 호출방법(in h)
-	void OnSeenPawn(APawn* Pawn);
-	void OnHearedNoise(APawn* Pawn, const FVector& Location, float Volume);
+	void OnSeenPawn(APawn* PP);
+
+	UFUNCTION()
+	void OnHearedNoise(APawn* pawn, const FVector& Location, float Volume);
 
 	void Attack();
 };

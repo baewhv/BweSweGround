@@ -42,7 +42,7 @@ void AMyZombie::BeginPlay()
 	bIsAttack = false;
 	bIsStealthKilled = false;
 	PawnSensing->OnSeePawn.AddDynamic(this, &AMyZombie::OnSeenPawn);		//다른 컴포넌트의 델리게이트 호출방법(in cpp)
-	//PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
+	PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
 
 }
 
@@ -50,8 +50,8 @@ void AMyZombie::BeginPlay()
 void AMyZombie::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//UE_LOG(LogClass, Warning, TEXT("Dot"));
 
+	//UE_LOG(LogClass, Warning, TEXT("Dot"));
 	//AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
 	//if (AIC)
 	//{
@@ -152,28 +152,6 @@ void AMyZombie::SetDie()
 	}
 }
 
-
-void AMyZombie::OnSeenPawn(APawn * Pawn)
-{
-	AMyCharacter* Player = Cast<AMyCharacter>(Pawn);
-	if (!Player || CurrentState == EZombieState::Dead)
-	{
-		return;
-	}
-
-	//UE_LOG(LogClass, Warning, TEXT("Active"));
-	if (CurrentState == EZombieState::Normal && Pawn->ActorHasTag(TEXT("Player"))&& Player->CurrentHP>0)
-	{
-		CurrentState = EZombieState::Chase;
-		AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
-		if (AIC)
-		{
-			AIC->SetCurrentState(CurrentState);
-			AIC->SetTargetPlayer(Pawn);
-		}
-	}
-}
-
 void AMyZombie::Attack()
 {
 	AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
@@ -192,18 +170,44 @@ void AMyZombie::Attack()
 	}
 }
 
-void AMyZombie::OnHearedNoise(APawn * Pawn, const FVector & Location, float Volume)
-{
 
-	if (CurrentState == EZombieState::Normal)
+void AMyZombie::OnSeenPawn(APawn * PP)
+{
+	AMyCharacter* Player = Cast<AMyCharacter>(PP);
+	if (!Player || CurrentState == EZombieState::Dead)
+	{
+		return;
+	}
+
+	//UE_LOG(LogClass, Warning, TEXT("Active"));
+	if (CurrentState == EZombieState::Normal && PP->ActorHasTag(TEXT("Player")) && Player->CurrentHP > 0)
 	{
 		CurrentState = EZombieState::Chase;
 		AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
 		if (AIC)
 		{
 			AIC->SetCurrentState(CurrentState);
-			AIC->SetTargetPlayer(Pawn);
+			AIC->SetTargetPlayer(PP);
 		}
 	}
 }
+
+void AMyZombie::OnHearedNoise(APawn * pawn, const FVector & Location, float Volume)
+{
+	FString pawnName = pawn->GetName();
+	UE_LOG(LogClass, Warning, TEXT("%s"), *pawnName);
+	//if (CurrentState == EZombieState::Normal)
+	//{
+	//	CurrentState = EZombieState::Chase;
+	//	AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
+	//	if (AIC)
+	//	{
+	//		AIC->SetCurrentState(CurrentState);
+	//		AIC->SetTargetPlayer(Pawn);
+	//	}
+	//}
+}
+
+//소리 들은 후 순서
+//alert -> move -> normal
 
