@@ -20,6 +20,7 @@
 #include "MyCameraShake.h"
 #include "Animation/AnimInstance.h"
 #include "Zombie/MyZombie.h"
+#include "Components/PawnNoiseEmitterComponent.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -36,6 +37,8 @@ AMyCharacter::AMyCharacter()
 
 	Weapon = CreateDefaultSubobject<UMyWeaponComponent>(TEXT("Weapon"));
 	Weapon->SetupAttachment(GetMesh(), TEXT("WeaponSocket"));
+
+	PawnNoiseEmitter = CreateDefaultSubobject<UPawnNoiseEmitterComponent>(TEXT("PawnNoiseEmitter"));
 
 	GetMesh()->SetRelativeLocation(FVector(0, 0, -88.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0, -90.0f, 0));
@@ -360,7 +363,8 @@ void AMyCharacter::Fire()
 	}
 	if (CurrentBullet != 0)
 	{
-		MakeNoise(1.0f, this, GetActorLocation());
+		//PawnMakeNoise(1.0f, GetActorLocation(), true, this);
+		PawnNoiseEmitter->MakeNoise(this, 1.0f, GetActorLocation());
 		CurrentBullet--;
 		APlayerController* PC = GetController<APlayerController>();
 		if (PC)

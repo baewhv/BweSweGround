@@ -14,6 +14,7 @@ enum class EZombieState :uint8
 	Chase = 2	UMETA(DisplayName = "Chase"),
 	Battle = 3	UMETA(DisplayName = "Battle"),
 	Dead = 4	UMETA(DisplayName = "Dead"),
+	Alert = 5	UMETA(DisplayName = "Alert"),
 
 };
 

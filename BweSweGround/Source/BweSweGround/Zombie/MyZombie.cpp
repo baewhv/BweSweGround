@@ -194,20 +194,19 @@ void AMyZombie::OnSeenPawn(APawn * PP)
 
 void AMyZombie::OnHearedNoise(APawn * pawn, const FVector & Location, float Volume)
 {
-	FString pawnName = pawn->GetName();
-	UE_LOG(LogClass, Warning, TEXT("%s"), *pawnName);
-	//if (CurrentState == EZombieState::Normal)
-	//{
-	//	CurrentState = EZombieState::Chase;
-	//	AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
-	//	if (AIC)
-	//	{
-	//		AIC->SetCurrentState(CurrentState);
-	//		AIC->SetTargetPlayer(Pawn);
-	//	}
-	//}
+	if (CurrentState == EZombieState::Normal)
+	{
+		UE_LOG(LogClass, Warning, TEXT("%.0f,%.0f,%.0f"), Location.X, Location.Y, Location.Z);
+		CurrentState = EZombieState::Chase;
+		AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
+		if (AIC)
+		{
+			AIC->SetCurrentState(CurrentState);
+			AIC->SetTargetPlayer(pawn);
+		}
+	}
 }
 
 //소리 들은 후 순서
-//alert -> move -> normal
+//alert(turn) -> move -> normal
 

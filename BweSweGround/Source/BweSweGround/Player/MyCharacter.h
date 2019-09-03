@@ -42,6 +42,8 @@ public:
 	class UCameraComponent* Camera;
 	UPROPERTY(VisibleAnywhere)
 	class UMyWeaponComponent* Weapon;
+	UPROPERTY(VisibleAnywhere)
+	class UPawnNoiseEmitterComponent* PawnNoiseEmitter;
 
 	EInteraction InteractionType = EInteraction::None;
 

@@ -36,6 +36,10 @@ void AMyGameModeBase::CheckTargetCount()
 		{
 			UGameplayStatics::OpenLevel(GetWorld(), TEXT("Scene03"));
 		}
+		else if (mapName == TEXT("TestScene"))
+		{
+			UGameplayStatics::OpenLevel(GetWorld(), TEXT("TestScene"));
+		}
 		else
 		{
 			UGameplayStatics::OpenLevel(GetWorld(), TEXT("Scene01"));
