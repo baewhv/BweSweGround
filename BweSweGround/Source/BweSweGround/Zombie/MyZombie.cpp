@@ -197,12 +197,12 @@ void AMyZombie::OnHearedNoise(APawn * pawn, const FVector & Location, float Volu
 	if (CurrentState == EZombieState::Normal)
 	{
 		UE_LOG(LogClass, Warning, TEXT("%.0f,%.0f,%.0f"), Location.X, Location.Y, Location.Z);
-		CurrentState = EZombieState::Chase;
+		//CurrentState = EZombieState::Alert;
 		AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
 		if (AIC)
 		{
 			AIC->SetCurrentState(CurrentState);
-			AIC->SetTargetPlayer(pawn);
+			AIC->SetTargetLocation(Location);
 		}
 	}
 }

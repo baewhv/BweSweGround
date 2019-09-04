@@ -45,5 +45,5 @@ void AZombieAIController::SetTargetPlayer(AActor * Player)
 }
 void AZombieAIController::SetTargetLocation(FVector Location)
 {
-	BBComponent->SetValueAsVector(FName(TEXT("Location")), Location);
+	BBComponent->SetValueAsVector(FName(TEXT("Target")), Location);
 }
