@@ -180,7 +180,7 @@ void AMyZombie::OnSeenPawn(APawn * PP)
 	}
 
 	//UE_LOG(LogClass, Warning, TEXT("Active"));
-	if (CurrentState == EZombieState::Normal && PP->ActorHasTag(TEXT("Player")) && Player->CurrentHP > 0)
+	if ((CurrentState == EZombieState::Normal || CurrentState == EZombieState::Alert) && PP->ActorHasTag(TEXT("Player")) && Player->CurrentHP > 0)
 	{
 		CurrentState = EZombieState::Chase;
 		AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
@@ -197,7 +197,7 @@ void AMyZombie::OnHearedNoise(APawn * pawn, const FVector & Location, float Volu
 	if (CurrentState == EZombieState::Normal)
 	{
 		UE_LOG(LogClass, Warning, TEXT("%.0f,%.0f,%.0f"), Location.X, Location.Y, Location.Z);
-		//CurrentState = EZombieState::Alert;
+		CurrentState = EZombieState::Alert;
 		AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
 		if (AIC)
 		{

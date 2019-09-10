@@ -363,7 +363,6 @@ void AMyCharacter::Fire()
 	}
 	if (CurrentBullet != 0)
 	{
-		//PawnMakeNoise(1.0f, GetActorLocation(), true, this);
 		PawnNoiseEmitter->MakeNoise(this, 1.0f, GetActorLocation());
 		CurrentBullet--;
 		APlayerController* PC = GetController<APlayerController>();
@@ -413,6 +412,7 @@ void AMyCharacter::Fire()
 				}
 				else
 				{
+					PawnNoiseEmitter->MakeNoise(OutHit.GetActor(), 1.0f, OutHit.Location);
 					HitP = HitEffect;
 					DecalP = BulletDecal;
 				}
