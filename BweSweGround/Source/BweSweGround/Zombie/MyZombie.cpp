@@ -11,6 +11,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Player/MyCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "SpawnAgent.h"
 #include "Animation/AnimInstance.h"
 
 // Sets default values
@@ -210,3 +211,7 @@ void AMyZombie::OnHearedNoise(APawn * pawn, const FVector & Location, float Volu
 //소리 들은 후 순서
 //alert(turn) -> move -> normal
 
+void AEnemy::getSpawnPoint(ASpawnAgent * point)
+{
+	SpawnPoint = point;
+}

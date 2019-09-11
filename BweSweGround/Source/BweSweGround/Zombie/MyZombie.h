@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "SpawnAgent.h"
 #include "MyZombie.generated.h"
 
 UENUM(BlueprintType)
@@ -84,4 +85,9 @@ public:
 	void OnHearedNoise(APawn* pawn, const FVector& Location, float Volume);
 
 	void Attack();
+
+	UPROPERTY(VisibleAnywhere)
+		ASpawnAgent* SpawnPoint;
+
+	void getSpawnPoint(ASpawnAgent* point);
 };
