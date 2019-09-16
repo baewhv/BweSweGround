@@ -44,5 +44,5 @@ void UTitleWidgetBase::Connect()
 void UTitleWidgetBase::MakeServer()
 {
 	
-	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Scene01")), true, TEXT("listen"));
+	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Lobby")), true, TEXT("listen"));
 }
