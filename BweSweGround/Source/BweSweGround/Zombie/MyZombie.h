@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "SpawnAgent.h"
+#include "SpawnManager.h"
 #include "MyZombie.generated.h"
 
 UENUM(BlueprintType)
@@ -87,7 +87,7 @@ public:
 	void Attack();
 
 	UPROPERTY(VisibleAnywhere)
-		ASpawnAgent* SpawnPoint;
+		ASpawnManager* SpawnPoint;
 
-	void getSpawnPoint(ASpawnAgent* point);
+	void getSpawnPoint(ASpawnManager* point);
 };

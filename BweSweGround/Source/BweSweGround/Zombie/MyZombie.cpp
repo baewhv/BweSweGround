@@ -11,7 +11,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Player/MyCharacter.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "SpawnAgent.h"
+#include "SpawnManager.h"
 #include "Animation/AnimInstance.h"
 
 // Sets default values
@@ -31,7 +31,7 @@ AMyZombie::AMyZombie()
 
 	PawnSensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensing"));
 	
-
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 // Called when the game starts or when spawned
@@ -211,7 +211,7 @@ void AMyZombie::OnHearedNoise(APawn * pawn, const FVector & Location, float Volu
 //소리 들은 후 순서
 //alert(turn) -> move -> normal
 
-void AEnemy::getSpawnPoint(ASpawnAgent * point)
+void AMyZombie::getSpawnPoint(ASpawnManager * point)
 {
 	SpawnPoint = point;
 }
