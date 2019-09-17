@@ -5,6 +5,7 @@
 #include "Components/EditableTextBox.h"	//기존 UI의 텍스트 박스
 #include "Components/Button.h"	//기존 UI의 버튼
 #include "Kismet/GameplayStatics.h"
+#include "MyGameInstance.h"
 
 void UTitleWidgetBase::NativeConstruct()
 {
@@ -30,6 +31,7 @@ void UTitleWidgetBase::Connect()
 {
 	if (ServerIP)
 	{
+		SetUserID();
 		FName Stage = FName(*ServerIP->GetText().ToString());
 		UE_LOG(LogClass, Warning, TEXT("ServerIP : %s"), *ServerIP->GetText().ToString());
 		UGameplayStatics::OpenLevel(GetWorld(), Stage);
@@ -43,6 +45,15 @@ void UTitleWidgetBase::Connect()
 
 void UTitleWidgetBase::MakeServer()
 {
-	
+	SetUserID();
 	UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Lobby")), true, TEXT("listen"));
+}
+
+void UTitleWidgetBase::SetUserID()
+{
+	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GI)
+	{
+		GI->UserID = UserID->GetText().ToString();
+	}
 }

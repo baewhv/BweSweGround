@@ -4,38 +4,40 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "TitleWidgetBase.generated.h"
+#include "LobbyWidgetBase.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BWESWEGROUND_API UTitleWidgetBase : public UUserWidget
+class BWESWEGROUND_API ULobbyWidgetBase : public UUserWidget
 {
 	GENERATED_BODY()
-	
 public:
+	int a;
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class UEditableTextBox* UserID;
+	class UTextBlock* AliveCount;
+	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class UEditableTextBox* UserPW;
+	class UTextBlock* PublicMessageBox;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class UButton* ConnectButton;
+	class UScrollBox* ChattingBox;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class UButton* MakeServerButton;
-
+	class UEditableTextBox* ChatBox;
+	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class UEditableTextBox* ServerIP;
+	class UButton* StartGameButton;
 
 	UFUNCTION(BlueprintCallable)
-	void Connect();
-	UFUNCTION(BlueprintCallable)
-	void MakeServer();
+	void StartGame();
 
-	void SetUserID();
+	UFUNCTION(BlueprintCallable)
+	void OnTextCommit(const FText& Text, ETextCommit::Type CommitMethod);
+
+	UFUNCTION(BlueprintCallable)
+	void AddMessage(const FText& Text);
 };
-
