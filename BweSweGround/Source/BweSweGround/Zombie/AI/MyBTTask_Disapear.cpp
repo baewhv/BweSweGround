@@ -4,7 +4,7 @@
 #include "MyBTTask_Disapear.h"
 #include "Zombie/AI/ZombieAIController.h"
 #include "Kismet/GameplayStatics.h"
-#include "MyGameModeBase.h"
+#include "Game/MyGameModeBase.h"
 #include "Engine/World.h"
 
 EBTNodeResult::Type UMyBTTask_Disapear::ExecuteTask(UBehaviorTreeComponent & OwnerComp, uint8 * NodeMemory)

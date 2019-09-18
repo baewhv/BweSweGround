@@ -1,0 +1,19 @@
+{
+  "name": "bwesweserver",
+  "version": "0.0.1",
+  "description": "bweswe's first UE4-server test!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "supervisor server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.4",
+    "express": "^4.17.1",
+    "parse": "^2.7.1",
+    "supervisor": "^0.12.0"
+  }
+}
