@@ -23,7 +23,8 @@ public:
 
 	virtual void Tick(float DeltaSeconds) override;
 
-	void SetAliver();
+	UFUNCTION()
+	void SetAliver_OnRep();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

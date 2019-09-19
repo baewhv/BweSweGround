@@ -24,10 +24,33 @@ void ALobbyGM::LeftTimer()
 
 void ALobbyGM::PostLogin(APlayerController * NewPlayer)
 {
+	Super::PostLogin(NewPlayer);
 	ALobbyGS* GS = GetGameState<ALobbyGS>();
 	if (GS)
 	{
 		GS->LeftAlive++;
-		GS->SetAliver();
+		if (HasAuthority())
+		{
+			GS->SetAliver_OnRep();
+		}
 	}
+}
+
+void ALobbyGM::Logout(AController * Exiting)
+{
+	Super::Logout(Exiting);
+	ALobbyGS* GS = GetGameState<ALobbyGS>();
+	if (GS)
+	{
+		GS->LeftAlive--;
+		if (HasAuthority())//권한이 있는지 체크.
+		{
+			GS->SetAliver_OnRep();
+		}
+	}
+}
+
+void ALobbyGM::StartGame()
+{
+	GetWorld()->ServerTravel(TEXT("Scene01"));
 }

@@ -24,16 +24,16 @@ void ALobbyGS::Tick(float DeltaSeconds)
 
 }
 
-void ALobbyGS::SetAliver()
+void ALobbyGS::SetAliver_OnRep()
 {
 	ALobbyPC* PC = Cast<ALobbyPC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (PC)
+	if (PC && PC->LobbyWidget)
 	{
 		//UE_LOG(LogClass, Warning, TEXT("Aliver : %d"), LeftAlive);
-		if (PC->LobbyWidget)	//생성 순서 상 로비 위젯은 꽤 나중.
-		{
-			PC->LobbyWidget->SetLeftAlive(LeftAlive);
-		}
+		//if (PC->LobbyWidget)	//생성 순서 상 로비 위젯은 꽤 나중.
+		//{
+		PC->LobbyWidget->SetLeftAlive(LeftAlive);
+		//}
 	}
 }
 

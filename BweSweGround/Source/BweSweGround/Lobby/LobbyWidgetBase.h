@@ -46,4 +46,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetLeftAlive(int32 LeftAlive);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void PlayStartButton();
+	void PlayStartButton_Implementation();
 };

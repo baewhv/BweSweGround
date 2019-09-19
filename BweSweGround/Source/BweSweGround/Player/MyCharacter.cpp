@@ -21,6 +21,7 @@
 #include "Animation/AnimInstance.h"
 #include "Zombie/MyZombie.h"
 #include "Components/PawnNoiseEmitterComponent.h"
+#include "UnrealNetwork.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -262,6 +263,7 @@ void AMyCharacter::Aim_Start()
 	}
 	bIsAim = true;
 	AimSpeed = AimSpeedValue;
+	C2S_Aim_Start();
 	//SpringArm->TargetArmLength = 80.0f;	->카메라로(MyPlayerCameraManager) 조정
 }
 
@@ -270,6 +272,23 @@ void AMyCharacter::Aim_End()
 	bIsAim = false;
 	AimSpeed = 1.0f;
 	//SpringArm->TargetArmLength = 200.0f;
+	C2S_Aim_End();
+}
+
+void AMyCharacter::C2S_Aim_Start_Implementation()
+{
+	if (bIsSprint)
+	{
+		Sprint_End();
+	}
+	bIsAim = true;
+	AimSpeed = AimSpeedValue;
+}
+
+void AMyCharacter::C2S_Aim_End_Implementation()
+{
+	bIsAim = false;
+	AimSpeed = 1.0f;
 }
 
 void AMyCharacter::Crouch_Start()
@@ -322,9 +341,17 @@ void AMyCharacter::StopFire()
 	bIsFire = false;
 }
 
-void AMyCharacter::SetDie()
+void AMyCharacter::S2A_SetDie_Implementation()
 {
+	bIsReloading = false;
+	FString DeadName = FString::Printf(TEXT("Death_%d"), FMath::RandRange(1, 3));
+	PlayAnimMontage(DeadAnimation, 1.0f, FName(*DeadName));
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC)
+	{
+		PC->DisableInput(PC);
+	}
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = false;
@@ -369,77 +396,13 @@ void AMyCharacter::Fire()
 		if (PC)
 		{
 			int32 RandX = FMath::RandRange(-3, 3);
-			//PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
-			//PC->GetViewportSize(SizeX, SizeY);
 			PC->DeprojectScreenPositionToWorld(SizeX / 2 - RandX, SizeY / 2, WorldLocation, WorldDirection);
 			TraceStart = WorldLocation;
 			TraceEnd = TraceStart + (WorldDirection * 90000.0f);	//90미터
 
 
-			TArray<TEnumAsByte<EObjectTypeQuery>> ObjectType;
-			ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
-			ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
-			ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
-
-			TArray<AActor*>IgnoreActors;
-			IgnoreActors.Add(this);
-
-			FHitResult OutHit;
-
-			bool bResult = UKismetSystemLibrary::LineTraceSingleForObjects(
-				GetWorld(),
-				TraceStart,
-				TraceEnd,
-				ObjectType,
-				false,
-				IgnoreActors,
-				EDrawDebugTrace::None,	//그리지 않겠다. / ForDuration -> 일정 시간만
-				OutHit,
-				true,
-				FLinearColor::Red, FLinearColor::Green, 5.0f);
-			if (bResult)
-			{
-				//UE_LOG(LogClass, Warning, TEXT("Hit %s"), *OutHit.GetActor()->GetName());
-				UParticleSystem* HitP;
-				UMaterialInterface* DecalP;
-				
-				if (OutHit.GetActor()->ActorHasTag(TEXT("Character")))
-				{
-					HitP = BloodEffect;
-					DecalP = BulletDecalBlood;
-					//UGameplayStatics::ApplyDamage(OutHit.GetActor(), 10.0f, nullptr, this, nullptr);
-
-				}
-				else
-				{
-					PawnNoiseEmitter->MakeNoise(OutHit.GetActor(), 1.0f, OutHit.Location);
-					HitP = HitEffect;
-					DecalP = BulletDecal;
-				}
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitP, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
-				UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DecalP, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
-				Decal->SetFadeScreenSize(0.001f);
-
-				//범위 대미지
-				//UGameplayStatics::ApplyRadialDamage(GetWorld(), 30.0f, OutHit.ImpactPoint, 500.0f, nullptr, IgnoreActors, this, GetController(), false, ECollisionChannel::ECC_Visibility);
-
-				//포인트 대미지
-				UGameplayStatics::ApplyPointDamage(OutHit.GetActor(), 10.0f, TraceEnd - TraceStart, OutHit, GetController(), this, nullptr);
-
-				//if (OutHit.GetActor()->ActorHasTag(TEXT("Player")))
-				//{
-				//	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodEffect, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
-				//	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), BulletDecalBlood, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
-				//	Decal->SetFadeScreenSize(0.001f);
-				//	UGameplayStatics::ApplyDamage(OutHit.GetActor(), 10.0f, nullptr, this, nullptr);
-				//}
-				//else
-				//{
-				//	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
-				//	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), BulletDecal, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
-				//	Decal->SetFadeScreenSize(0.001f);
-				//}
-			}
+			C2S_Shot(TraceStart, TraceEnd);
+			
 		}
 		FRotator PlayerRotation = GetControlRotation();
 		PlayerRotation.Pitch += FMath::RandRange(0.5f, 1.0f);
@@ -488,6 +451,69 @@ void AMyCharacter::Stuck()
 	bIsFire = false;
 }
 
+
+
+bool AMyCharacter::C2S_Shot_Validate(FVector TraceStart, FVector TraceEnd)
+{
+	return true;
+}
+
+void AMyCharacter::C2S_Shot_Implementation(FVector TraceStart, FVector TraceEnd)
+{
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectType;
+	ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+	ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
+	ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
+
+	TArray<AActor*>IgnoreActors;
+	IgnoreActors.Add(this);
+
+	FHitResult OutHit;
+
+	bool bResult = UKismetSystemLibrary::LineTraceSingleForObjects(
+		GetWorld(),
+		TraceStart,
+		TraceEnd,
+		ObjectType,
+		false,
+		IgnoreActors,
+		EDrawDebugTrace::None,	//그리지 않겠다. / ForDuration -> 일정 시간만
+		OutHit,
+		true,
+		FLinearColor::Red, FLinearColor::Green, 5.0f);
+	if (bResult)
+	{
+		UParticleSystem* HitP;
+		UMaterialInterface* DecalP;
+		if (OutHit.GetActor()->ActorHasTag(TEXT("Character")))
+		{
+			HitP = BloodEffect;
+			DecalP = BulletDecalBlood;
+		}
+		else
+		{
+			PawnNoiseEmitter->MakeNoise(OutHit.GetActor(), 1.0f, OutHit.Location);
+			HitP = HitEffect;
+			DecalP = BulletDecal;
+		}
+
+		S2A_SpawnDecalAndEffect(OutHit, HitP, DecalP);
+		//범위 대미지
+		//UGameplayStatics::ApplyRadialDamage(GetWorld(), 30.0f, OutHit.ImpactPoint, 500.0f, nullptr, IgnoreActors, this, GetController(), false, ECollisionChannel::ECC_Visibility);
+		//포인트 대미지
+		UGameplayStatics::ApplyPointDamage(OutHit.GetActor(), 10.0f, TraceEnd - TraceStart, OutHit, GetController(), this, nullptr);
+
+	}
+
+}
+
+void AMyCharacter::S2A_SpawnDecalAndEffect_Implementation(FHitResult OutHit, UParticleSystem * Hit, UMaterialInterface * DecalP)
+{
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Hit, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
+	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DecalP, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
+	Decal->SetFadeScreenSize(0.001f);
+}
+
 void AMyCharacter::Interacted()
 {
 	switch (InteractionType)
@@ -503,7 +529,6 @@ void AMyCharacter::Interacted()
 		StartStealthKill();
 		break;
 	}
-	
 }
 
 void AMyCharacter::StartStealthKill()
@@ -592,15 +617,13 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 
 	if (CurrentHP == 0)
 	{
-		bIsReloading = false;
-		SetDie();
+		
+		S2A_SetDie();
 		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
 		//GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);	//메쉬 물리 체크 켜기.
 		//GetMesh()->SetSimulatePhysics(true);
 		//bIsAlive = false;
-
-		FString DeadName = FString::Printf(TEXT("Death_%d"), FMath::RandRange(1, 3));
-		PlayAnimMontage(DeadAnimation, 1.0f, FName(*DeadName));
+		
 		//SetLifeSpan(5.0f);
 	}
 
@@ -635,4 +658,18 @@ FVector AMyCharacter::GetSpringArmPosition() const
 void AMyCharacter::SetSpringArmPosition(FVector NewPosition)
 {
 	SpringArm->SetRelativeLocation(NewPosition);
+}
+
+void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AMyCharacter, CurrentHP);
+	DOREPLIFETIME(AMyCharacter, bIsSprint);
+	DOREPLIFETIME(AMyCharacter, bIsAim);
+	DOREPLIFETIME(AMyCharacter, bIsMotion);
+	DOREPLIFETIME(AMyCharacter, bIsAlive);
+	DOREPLIFETIME(AMyCharacter, bIsFire);
+	DOREPLIFETIME(AMyCharacter, bIsReloading);
+	DOREPLIFETIME(AMyCharacter, bIsStealthKill);
 }

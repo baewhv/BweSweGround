@@ -27,6 +27,7 @@ void UMyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		bIsStealthKill = Pawn->bIsStealthKill;
 		FireAlpha = Pawn->bIsFire ? 1 : 0;
 		bIsReloading = Pawn->bIsReloading;
+		
 	}
 }
 

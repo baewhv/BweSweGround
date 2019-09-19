@@ -34,5 +34,4 @@ public:
 	UFUNCTION(Client, Reliable)
 	void S2C_SendMessage(const FText& Message);
 	void S2C_SendMessage_Implementation(const FText& Message);
-	
 };

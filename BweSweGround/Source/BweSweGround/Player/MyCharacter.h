@@ -60,19 +60,40 @@ public:
 	void Aim_Start();
 	void Aim_End();
 
+	UFUNCTION(Server, Reliable)
+	void C2S_Aim_Start();
+	void C2S_Aim_Start_Implementation();
+
+	UFUNCTION(Server, Reliable)
+	void C2S_Aim_End();
+	void C2S_Aim_End_Implementation();
+
 	void Crouch_Start();
 	void Crouch_End();
 
 	void StartFire();
 	void StopFire();
 
-	void SetDie();
+	UFUNCTION(NetMulticast, Reliable)
+	void S2A_SetDie();
+	void S2A_SetDie_Implementation();
 
 	void Reload();
 	void Reload_End();
 
 	void Fire();
 	void Stuck();
+
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void C2S_Shot(FVector TraceStart, FVector TraceEnd);
+	bool C2S_Shot_Validate(FVector TraceStart, FVector TraceEnd);
+	void C2S_Shot_Implementation(FVector TraceStart, FVector TraceEnd);
+
+	//Host만 사용 가능, 전체 클라이언트에 전송(Host포함)
+	UFUNCTION(NetMulticast, Reliable)
+	void S2A_SpawnDecalAndEffect(FHitResult OutHit, UParticleSystem* Hit, UMaterialInterface* DecalP);
+	void S2A_SpawnDecalAndEffect_Implementation(FHitResult OutHit, UParticleSystem* Hit, UMaterialInterface* DecalP);
 
 	void Interacted();
 	void StartStealthKill();
@@ -108,15 +129,19 @@ public:
 	float ForwardValue = 0.0f;
 	float RightValue = 0.0f;
 	
+	UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsSprint : 1;
+	UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsAim : 1;
+	UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsMotion : 1;
+	UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsAlive : 1;
-
+	UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsFire : 1;
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsReloading : 1;
-
+	UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsStealthKill : 1;
 
 	FRotator GetAimOffset() const;
@@ -162,7 +187,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UCameraShake> FireCameraShake;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
 	float CurrentHP = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float MaxHP = 100.0f;
@@ -178,4 +203,6 @@ public:
 	int CurrentBullet = 30;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int MaxBullet = 30;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const override;
 };

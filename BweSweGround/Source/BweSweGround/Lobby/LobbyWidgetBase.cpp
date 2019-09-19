@@ -10,6 +10,7 @@
 #include "LobbyPC.h"
 #include "MyGameInstance.h"
 #include "LobbyGS.h"
+#include "LobbyGM.h"
 
 void ULobbyWidgetBase::NativeConstruct()
 {
@@ -28,11 +29,11 @@ void ULobbyWidgetBase::NativeConstruct()
 	{
 		ChatBox->OnTextCommitted.AddDynamic(this, &ULobbyWidgetBase::OnTextCommit);
 	}
-	ALobbyGS* GS = GetWorld()->GetGameState<ALobbyGS>();
+	/*ALobbyGS* GS = GetWorld()->GetGameState<ALobbyGS>();
 	if (GS)
 	{
-		GS->SetAliver();
-	}
+		GS->SetAliver_OnRep();
+	}*/
 	
 }
 
@@ -41,6 +42,12 @@ void ULobbyWidgetBase::NativeConstruct()
 void ULobbyWidgetBase::StartGame()
 {
 	UE_LOG(LogClass, Warning, TEXT("Start!"));
+	
+	ALobbyGM* GM = Cast<ALobbyGM>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GM)
+	{
+		GM->StartGame();
+	}
 }
 
 void ULobbyWidgetBase::OnTextCommit(const FText & Text, ETextCommit::Type CommitMethod)
@@ -62,7 +69,6 @@ void ULobbyWidgetBase::OnTextCommit(const FText & Text, ETextCommit::Type Commit
 			//메시지 전송
 			if (!Text.IsEmpty())
 			{
-				
 				//메시지 전송
 				ALobbyPC* PC = Cast<ALobbyPC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 				UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
@@ -123,3 +129,9 @@ void ULobbyWidgetBase::SetLeftAlive(int32 LeftAlive)
 		AliveCount->SetText(FText::FromString(*Temp));
 	}
 }
+
+void ULobbyWidgetBase::PlayStartButton_Implementation()
+{
+	
+}
+

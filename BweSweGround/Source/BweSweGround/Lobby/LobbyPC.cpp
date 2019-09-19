@@ -3,6 +3,7 @@
 
 #include "LobbyPC.h"
 #include "LobbyWidgetBase.h"
+#include "Components/Button.h"
 
 void ALobbyPC::BeginPlay()
 {
@@ -28,6 +29,17 @@ void ALobbyPC::BeginPlay()
 				//FInputModeGameAndUI f;
 				//f. ->이후 옵션 설정.
 				SetInputMode(FInputModeGameAndUI());
+
+				if (!HasAuthority())
+				{
+					LobbyWidget->StartGameButton->SetVisibility(ESlateVisibility::Collapsed);
+					
+				}
+				else
+				{
+					LobbyWidget->PlayStartButton();
+				}
+
 			}
 		}
 	}
