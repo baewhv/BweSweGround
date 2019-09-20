@@ -57,6 +57,14 @@ public:
 	void Sprint_Start();
 	void Sprint_End();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void C2S_Sprint_Start();
+	void C2S_Sprint_Start_Implementation();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void C2S_Sprint_End();
+	void C2S_Sprint_End_Implementation();
+
 	void Aim_Start();
 	void Aim_End();
 
@@ -86,9 +94,9 @@ public:
 
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void C2S_Shot(FVector TraceStart, FVector TraceEnd);
-	bool C2S_Shot_Validate(FVector TraceStart, FVector TraceEnd);
-	void C2S_Shot_Implementation(FVector TraceStart, FVector TraceEnd);
+	void C2S_Shot(FVector _TraceStart, FVector _TraceEnd);
+	bool C2S_Shot_Validate(FVector _TraceStart, FVector _TraceEnd);
+	void C2S_Shot_Implementation(FVector _TraceStart, FVector _TraceEnd);
 
 	//Host만 사용 가능, 전체 클라이언트에 전송(Host포함)
 	UFUNCTION(NetMulticast, Reliable)
@@ -205,4 +213,11 @@ public:
 	int MaxBullet = 30;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const override;
+
+
+
+	FTimerHandle LookItemHandler;
+
+	UFUNCTION()
+		void LookItem();
 };

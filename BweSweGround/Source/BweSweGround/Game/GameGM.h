@@ -13,5 +13,11 @@ UCLASS()
 class BWESWEGROUND_API AGameGM : public AGameModeBase
 {
 	GENERATED_BODY()
+public:
+	AGameGM();
+	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class AMasterItem> ItemClass;
 	
 };

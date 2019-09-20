@@ -10,7 +10,7 @@ FString UMyGameInstance::GetUserID()
 	return UserID.IsEmpty() ? FString::Printf(TEXT("Noname%d"), FMath::RandRange(0, 100)) : UserID;
 }
 
-void UMyGameInstance::HTTPPost(FString URL, FString UserID, FString Password, FHttpRequestCompleteDelegate ProcessRequestComplete)
+void UMyGameInstance::HTTPPost(FString URL, FString ID, FString Password, FHttpRequestCompleteDelegate ProcessRequestComplete)
 {
 	Http = &FHttpModule::Get();
 
@@ -19,7 +19,7 @@ void UMyGameInstance::HTTPPost(FString URL, FString UserID, FString Password, FH
 	Request->OnProcessRequestComplete() = ProcessRequestComplete;
 
 	//FString url = FString(TEXT("http://127.0.0.1:3000/login"));
-	FString PostParameters = FString::Printf(TEXT("userid=%s"), *UserID)
+	FString PostParameters = FString::Printf(TEXT("userid=%s"), *ID)
 		+ FString::Printf(TEXT("&password=%s"), *Password);
 	Request->SetURL(URL);
 	Request->SetVerb("POST");

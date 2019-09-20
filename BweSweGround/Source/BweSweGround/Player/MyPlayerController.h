@@ -17,4 +17,13 @@ class BWESWEGROUND_API AMyPlayerController : public APlayerController
 public:
 	AMyPlayerController();
 	
+	virtual void BeginPlay() override;
+	
+	class UItemToolTipWidgetBase* ItemToolTip;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class UItemToolTipWidgetBase> ItemToolTipClass;
+
+	void ShowItemName(FString Name);
+	void HideItemName();
 };

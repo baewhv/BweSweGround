@@ -2,26 +2,28 @@
 
 
 #include "MyCharacter.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "Camera/CameraComponent.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "MyWeaponComponent.h"
-#include "Components/InputComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "GameFramework/PlayerController.h"
-#include "TimerManager.h"
-#include "Engine/World.h"
-#include "Kismet/GameplayStatics.h"
-#include "Components/DecalComponent.h" 
-#include "Components/CapsuleComponent.h"
+#include "Item/MasterItem.h"
 #include "MyCameraShake.h"
 #include "Animation/AnimInstance.h"
 #include "Zombie/MyZombie.h"
+#include "Camera/CameraComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/InputComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/DecalComponent.h" 
+#include "Components/CapsuleComponent.h"
 #include "Components/PawnNoiseEmitterComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerController.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
+#include "Engine/World.h"
 #include "UnrealNetwork.h"
+#include "MyGameInstance.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -45,7 +47,7 @@ AMyCharacter::AMyCharacter()
 	GetMesh()->SetRelativeRotation(FRotator(0, -90.0f, 0));
 
 	SpringArm->TargetArmLength = 200.0f;
-	SpringArm->SocketOffset = FVector(0, 100.0f, 70.0f);
+	SpringArm->SocketOffset = FVector(0, 50.0f, 70.0f);
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 300.0f;
@@ -68,6 +70,8 @@ void AMyCharacter::BeginPlay()
 	NormalSpringArmPosition = GetSpringArmPosition();//서 있을 때
 	CrouchSpringArmPosition = NormalSpringArmPosition + FVector(0, 0, -44.0f);	//앉아 있을 때.
 	CurrentHP = MaxHP;	//체력 초기화
+
+	GetWorldTimerManager().SetTimer(LookItemHandler, this, &AMyCharacter::TraceObject, 0.1f, true);;
 }
 
 // Called every frame
@@ -79,7 +83,6 @@ void AMyCharacter::Tick(float DeltaTime)
 
 	//FString Temp = FString::Printf(TEXT("Pos (%f, %f)"),ForwardValue, RightValue);
 	//UKismetSystemLibrary::PrintString(GetWorld(), Temp);
-	TraceObject();
 	
 }
 
@@ -115,6 +118,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::TraceObject()
 {
+	
 	APlayerController* PC = GetController<APlayerController>();
 	if (PC)
 	{
@@ -127,6 +131,8 @@ void AMyCharacter::TraceObject()
 
 		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectType;
 		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
+		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
 
 		TArray<AActor*>IgnoreActors;
 		IgnoreActors.Add(this);
@@ -146,7 +152,7 @@ void AMyCharacter::TraceObject()
 			FLinearColor::Red, FLinearColor::Green, 5.0f);
 		if (bResult)
 		{
-			//UE_LOG(LogClass, Warning, TEXT("Hit %s"), *OutHit.GetActor()->GetName());
+			//UE_LOG(LogClass, Warning, TEXT("bResult Hit %s"), *OutHit.GetActor()->GetName());
 
 			if (OutHit.GetActor()->ActorHasTag(TEXT("Enemy")))
 			{
@@ -160,6 +166,12 @@ void AMyCharacter::TraceObject()
 					InteractionType = EInteraction::Stealth;
 					InteractTarget = OutHit.GetActor();
 				}
+			}
+			else if (OutHit.GetActor()->ActorHasTag(TEXT("Item")))
+			{
+				InteractionType = EInteraction::Object;
+				InteractTarget = OutHit.GetActor();
+				//UE_LOG(LogClass, Warning, TEXT("%s"), *OutHit.Actor->GetName())
 			}
 		}
 		else
@@ -222,7 +234,13 @@ void AMyCharacter::Turn(float Value)
 
 void AMyCharacter::Sprint_Start()
 {
-	if (bIsMotion || !bIsAlive || bIsStealthKill)
+	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GI)
+	{
+		FString UserID = GI->GetUserID();
+		UE_LOG(LogClass, Warning, TEXT("%s : Sprint_Start"), *UserID);
+	}
+	if (bIsMotion || !bIsAlive || bIsStealthKill || (ForwardValue == 0.0f && RightValue == 0.0f))
 	{
 		return;
 	}
@@ -242,9 +260,52 @@ void AMyCharacter::Sprint_Start()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsSprint = true;
 	SprintSpeed = SprintSpeedValue;
+	C2S_Sprint_Start();
 }
 
 void AMyCharacter::Sprint_End()
+{
+	if (bIsSprint)
+	{
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+		bIsSprint = false;
+		SprintSpeed = 1.0f;
+	}
+	C2S_Sprint_End();
+}
+
+void AMyCharacter::C2S_Sprint_Start_Implementation()
+{
+	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GI)
+	{
+		FString UserID = GI->GetUserID();
+		UE_LOG(LogClass, Warning, TEXT("%s : C2S_Sprint_Start_Implementation"), *UserID);
+	}
+	if (bIsMotion || !bIsAlive || bIsStealthKill || (ForwardValue == 0.0f && RightValue == 0.0f))
+	{
+		return;
+	}
+	if (bIsAim)
+	{
+		Aim_End();
+	}
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	if (bIsReloading)
+	{
+		bIsReloading = false;
+	}
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bIsSprint = true;
+	SprintSpeed = SprintSpeedValue;
+}
+
+void AMyCharacter::C2S_Sprint_End_Implementation()
 {
 	if (bIsSprint)
 	{
@@ -350,7 +411,7 @@ void AMyCharacter::S2A_SetDie_Implementation()
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC)
 	{
-		PC->DisableInput(PC);
+		DisableInput(PC);
 	}
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
@@ -453,12 +514,12 @@ void AMyCharacter::Stuck()
 
 
 
-bool AMyCharacter::C2S_Shot_Validate(FVector TraceStart, FVector TraceEnd)
+bool AMyCharacter::C2S_Shot_Validate(FVector _TraceStart, FVector _TraceEnd)
 {
 	return true;
 }
 
-void AMyCharacter::C2S_Shot_Implementation(FVector TraceStart, FVector TraceEnd)
+void AMyCharacter::C2S_Shot_Implementation(FVector _TraceStart, FVector _TraceEnd)
 {
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectType;
 	ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
@@ -472,7 +533,7 @@ void AMyCharacter::C2S_Shot_Implementation(FVector TraceStart, FVector TraceEnd)
 
 	bool bResult = UKismetSystemLibrary::LineTraceSingleForObjects(
 		GetWorld(),
-		TraceStart,
+		_TraceStart,
 		TraceEnd,
 		ObjectType,
 		false,
@@ -672,4 +733,51 @@ void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(AMyCharacter, bIsFire);
 	DOREPLIFETIME(AMyCharacter, bIsReloading);
 	DOREPLIFETIME(AMyCharacter, bIsStealthKill);
+}
+
+void AMyCharacter::LookItem()
+{
+
+	APlayerController* PC = GetController<APlayerController>();
+	if (PC)
+	{
+		int32 RandX = FMath::RandRange(-3, 3);
+		PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
+		PC->GetViewportSize(SizeX, SizeY);
+		PC->DeprojectScreenPositionToWorld(SizeX / 2, SizeY / 2, WorldLocation, WorldDirection);
+		TraceStart = WorldLocation;
+		TraceEnd = TraceStart + (WorldDirection * 300.0f);	//2미터
+
+		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectType;
+		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
+		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
+		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
+
+		TArray<AActor*>IgnoreActors;
+		IgnoreActors.Add(this);
+
+		FHitResult OutHit;
+
+		bool bResult = UKismetSystemLibrary::LineTraceSingleForObjects(
+			GetWorld(),
+			TraceStart,
+			TraceEnd,
+			ObjectType,
+			false,
+			IgnoreActors,
+			EDrawDebugTrace::None,	//그리지 않겠다. / ForDuration -> 일정 시간만
+			OutHit,
+			true,
+			FLinearColor::Red, FLinearColor::Green, 5.0f);
+		if (bResult)
+		{
+			AMasterItem* Item = Cast<AMasterItem>(OutHit.Actor);
+			if(Item)
+			{
+				UE_LOG(LogClass, Warning, TEXT("%s"), *OutHit.Actor->GetName())
+			}
+			
+		}
+	}
+
 }

@@ -52,25 +52,8 @@ void AMyZombie::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//UE_LOG(LogClass, Warning, TEXT("Dot"));
-	//AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
-	//if (AIC)
-	//{
-	//	AActor* Player = Cast<AActor>(AIC->BBComponent->GetValueAsObject(FName(TEXT("Player"))));
-	//	if (Player)
-	//	{
-	//		//float Distance = FVector::Distance(GetActorLocation(), Player->GetActorLocation());
-	//		//FVector PlayerVector = Player->GetActorLocation() - GetActorLocation();
-	//		//float aa = UKismetMathLibrary::DotProduct2D(FrontVector, PlayerVector);
-	//		;
-	//		float Dot = GetMesh()->GetAnimInstance()->CalculateDirection((Player->GetActorLocation() - GetActorLocation()).GetSafeNormal(), GetActorRotation());
-	//		/*if (Distance < 200.0f && Dot > 0.0f)
-	//		{
-	//			UGameplayStatics::ApplyDamage(Player, 30.0f, GetController(), this, nullptr);
-	//		}*/
-	//		UE_LOG(LogClass, Warning, TEXT("Dot : %f"), UKismetMathLibrary::Abs(Dot/180.0f));
-	//	}
-	//}
+	
+	
 	
 }
 

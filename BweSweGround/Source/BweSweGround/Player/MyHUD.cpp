@@ -36,12 +36,17 @@ void AMyHUD::DrawHUD()
 	{
 		FString string = FString::Printf(TEXT("HP : %.f\nAmmo : %d"), Player->CurrentHP, Player->CurrentBullet);
 		DrawText(string, FLinearColor::Blue, Canvas->SizeX/2 , Canvas->SizeY / 2);
-		FString string_stealth;
+		
 		if (Player->InteractionType == EInteraction::Stealth)
 		{
-			string_stealth = FString::Printf(TEXT("[E]StealthKill"));
+			FString string_stealth = FString::Printf(TEXT("[E]StealthKill"));
 			DrawText(string_stealth, FLinearColor::Blue, (Canvas->SizeX / 2) - string_stealth.Len() * 5.5f, Canvas->SizeY / 2);
 			//DrawText(string, FLinearColor::Blue, Canvas->SizeX / 2, Canvas->SizeY / 2);
+		}
+		else if (Player->InteractionType == EInteraction::Object)
+		{
+			FString string_object = FString::Printf(TEXT("[E]get[%s]"), *(Player->InteractTarget->GetName()));
+			DrawText(string_object, FLinearColor::Blue, (Canvas->SizeX / 2) - string_object.Len() * 5.5f, Canvas->SizeY / 2);
 		}
 		/*else
 		{
