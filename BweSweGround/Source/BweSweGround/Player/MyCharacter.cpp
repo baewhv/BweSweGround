@@ -6,7 +6,7 @@
 #include "MyCameraShake.h"
 #include "Animation/AnimInstance.h"
 #include "Zombie/MyZombie.h"
-#include "Player/MyPlayerController.h"
+#include "Game/GamePC.h"
 #include "Item/InventoryWidgetBase.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -120,7 +120,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void AMyCharacter::TraceObject()
 {
 	
-	AMyPlayerController* PC = GetController<AMyPlayerController>();
+	AGamePC* PC = GetController<AGamePC>();
 	if (PC)
 	{
 		int32 RandX = FMath::RandRange(-3, 3);
@@ -785,7 +785,7 @@ void AMyCharacter::S2C_CompletePickUpItem_Implementation(AMasterItem * Item)
 {
 	if (Item && !Item->IsPendingKill())//IsPendingKill -> 서버상에서 삭제될 아이템. 
 	{
-		AMyPlayerController* PC = Cast< AMyPlayerController>(GetController());
+		AGamePC* PC = Cast<AGamePC>(GetController());
 		if (PC)
 		{
 			int32 SlotIndex = PC->InventoryWidget->GetEmptySlot();

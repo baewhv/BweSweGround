@@ -23,6 +23,5 @@ void AGameGM::BeginPlay()
 	for (auto Location : ItemLocations) 
 	{
 		GetWorld()->SpawnActor<AMasterItem>(ItemClass, Location->GetTransform());
-		UE_LOG(LogClass, Warning, TEXT("Spawn!"));
 	}
 }

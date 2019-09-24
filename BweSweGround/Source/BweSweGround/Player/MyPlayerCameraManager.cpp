@@ -3,7 +3,7 @@
 
 #include "MyPlayerCameraManager.h"
 //#include "Kismet/GameplayStatics.h"
-#include "MyPlayerController.h"
+#include "Game/GamePC.h"
 #include "MyCharacter.h"
 
 void AMyPlayerCameraManager::UpdateCamera(float DeltaTime)
@@ -13,7 +13,7 @@ void AMyPlayerCameraManager::UpdateCamera(float DeltaTime)
 	//UGameplayStatics::GetPlayerPawn(GetWorld(), );	폰을 불러오는 간단한 방법.
 
 	//GetOwner
-	AMyPlayerController* PC = Cast<AMyPlayerController>(GetOwningPlayerController());
+	AGamePC* PC = Cast<AGamePC>(GetOwningPlayerController());
 	if (PC)
 	{
 		AMyCharacter* Pawn = Cast<AMyCharacter>(PC->GetPawn());

@@ -10,14 +10,11 @@
 AMyPlayerController::AMyPlayerController()
 {
 	PlayerCameraManagerClass = AMyPlayerCameraManager::StaticClass();
-
-
 }
 
 void AMyPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (IsLocalPlayerController())
 	{
 		if (ItemToolTipClass)
@@ -26,14 +23,12 @@ void AMyPlayerController::BeginPlay()
 			ItemToolTip->AddToViewport();
 			ItemToolTip->SetVisibility(ESlateVisibility::Collapsed);
 		}
-
-		if (ItemToolTipClass)
+		if (InventoryWidgetClass)
 		{
 			InventoryWidget = CreateWidget<UInventoryWidgetBase>(this, InventoryWidgetClass);
 			InventoryWidget->AddToViewport();
 			InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
-
 	}
 }
 
