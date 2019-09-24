@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+
+#include "Engine/EngineTypes.h"
+
 #include "MyCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -218,6 +221,16 @@ public:
 
 	FTimerHandle LookItemHandler;
 
+
+	FHitResult PickUpItem;
 	UFUNCTION()
-		void LookItem();
+		void PickUp();
+
+	UFUNCTION(Server, Reliable)
+	void C2S_CheckPickUpItem(class AMasterItem* Item);
+	void C2S_CheckPickUpItem_Implementation(class AMasterItem* Item);
+
+	UFUNCTION(Client, Reliable)
+	void S2C_CompletePickUpItem(class AMasterItem* Item);
+	void S2C_CompletePickUpItem_Implementation(class AMasterItem* Item);
 };

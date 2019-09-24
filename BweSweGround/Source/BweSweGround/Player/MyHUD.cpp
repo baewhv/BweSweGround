@@ -7,6 +7,7 @@
 #include "Engine/Texture2D.h"
 #include "Player/MyCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Item/ItemTable.h"
 
 void AMyHUD::BeginPlay()
 {
@@ -45,8 +46,12 @@ void AMyHUD::DrawHUD()
 		}
 		else if (Player->InteractionType == EInteraction::Object)
 		{
-			FString string_object = FString::Printf(TEXT("[E]get[%s]"), *(Player->InteractTarget->GetName()));
-			DrawText(string_object, FLinearColor::Blue, (Canvas->SizeX / 2) - string_object.Len() * 5.5f, Canvas->SizeY / 2);
+			//FItemTable Item = Cast<FItemTable>(Player->InteractTarget);
+			/*if (Item)
+			{
+				FString string_object = FString::Printf(TEXT("[E]get[%s]"), *Item.ItemName);
+				DrawText(string_object, FLinearColor::Blue, (Canvas->SizeX / 2) - string_object.Len() * 5.5f, Canvas->SizeY / 2);
+			}*/
 		}
 		/*else
 		{

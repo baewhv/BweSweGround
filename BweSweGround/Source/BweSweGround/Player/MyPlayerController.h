@@ -19,6 +19,7 @@ public:
 	
 	virtual void BeginPlay() override;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UItemToolTipWidgetBase* ItemToolTip;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -26,4 +27,17 @@ public:
 
 	void ShowItemName(FString Name);
 	void HideItemName();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UInventoryWidgetBase* InventoryWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class UInventoryWidgetBase> InventoryWidgetClass;
+
+	void ShowInventory();
+	void HideInventory();
+
+	virtual void SetupInputComponent() override;
+
+	void Inventory();
 };

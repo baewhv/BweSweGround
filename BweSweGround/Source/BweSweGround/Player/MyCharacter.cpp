@@ -1,12 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "MyCharacter.h"
 #include "MyWeaponComponent.h"
 #include "Item/MasterItem.h"
 #include "MyCameraShake.h"
 #include "Animation/AnimInstance.h"
 #include "Zombie/MyZombie.h"
+#include "Player/MyPlayerController.h"
+#include "Item/InventoryWidgetBase.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/InputComponent.h"
@@ -119,7 +120,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void AMyCharacter::TraceObject()
 {
 	
-	APlayerController* PC = GetController<APlayerController>();
+	AMyPlayerController* PC = GetController<AMyPlayerController>();
 	if (PC)
 	{
 		int32 RandX = FMath::RandRange(-3, 3);
@@ -167,17 +168,30 @@ void AMyCharacter::TraceObject()
 					InteractTarget = OutHit.GetActor();
 				}
 			}
-			else if (OutHit.GetActor()->ActorHasTag(TEXT("Item")))
+			if (OutHit.GetActor()->ActorHasTag(TEXT("Item")))
 			{
-				InteractionType = EInteraction::Object;
-				InteractTarget = OutHit.GetActor();
+				AMasterItem* Item = Cast<AMasterItem>(OutHit.Actor);
+				if (Item)
+				{
+					InteractionType = EInteraction::Object;
+					InteractTarget = OutHit.GetActor();
+					PC->ShowItemName(Item->ItemData.ItemName);
+					PickUpItem = OutHit;
+				}
 				//UE_LOG(LogClass, Warning, TEXT("%s"), *OutHit.Actor->GetName())
+			}
+			else
+			{
+				PC->HideItemName();
+				PickUpItem = FHitResult();
 			}
 		}
 		else
 		{
 			InteractionType = EInteraction::None;
 			InteractTarget = nullptr;
+			PC->HideItemName();
+			PickUpItem = FHitResult();
 		}
 	}
 }
@@ -589,6 +603,10 @@ void AMyCharacter::Interacted()
 		UE_LOG(LogClass, Warning, TEXT("Stealth"));
 		StartStealthKill();
 		break;
+	case EInteraction::Object:
+		//UE_LOG(LogClass, Warning, TEXT("Object"));
+		PickUp();
+		break;
 	}
 }
 
@@ -735,49 +753,43 @@ void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(AMyCharacter, bIsStealthKill);
 }
 
-void AMyCharacter::LookItem()
+
+
+void AMyCharacter::PickUp()
 {
-
-	APlayerController* PC = GetController<APlayerController>();
-	if (PC)
+	//TraceObject();
+	AMasterItem* Item = Cast<AMasterItem>(PickUpItem.GetActor());
+	if (Item)
 	{
-		int32 RandX = FMath::RandRange(-3, 3);
-		PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
-		PC->GetViewportSize(SizeX, SizeY);
-		PC->DeprojectScreenPositionToWorld(SizeX / 2, SizeY / 2, WorldLocation, WorldDirection);
-		TraceStart = WorldLocation;
-		TraceEnd = TraceStart + (WorldDirection * 300.0f);	//2미터
+		C2S_CheckPickUpItem(Item);
+		
+	}
+	else
+	{
+		UE_LOG(LogClass, Warning, TEXT("%s"), *PickUpItem.GetActor()->GetName());
+	}
+}
 
-		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectType;
-		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldDynamic));
-		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic));
-		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
+void AMyCharacter::C2S_CheckPickUpItem_Implementation(AMasterItem * Item)
+{
+	if (Item&& !Item->IsPendingKill())//IsPendingKill -> 서버상에서 삭제될 아이템. 
+	{
 
-		TArray<AActor*>IgnoreActors;
-		IgnoreActors.Add(this);
+		S2C_CompletePickUpItem(Item);
+		
+		Item->Destroy();
+	}
+}
 
-		FHitResult OutHit;
-
-		bool bResult = UKismetSystemLibrary::LineTraceSingleForObjects(
-			GetWorld(),
-			TraceStart,
-			TraceEnd,
-			ObjectType,
-			false,
-			IgnoreActors,
-			EDrawDebugTrace::None,	//그리지 않겠다. / ForDuration -> 일정 시간만
-			OutHit,
-			true,
-			FLinearColor::Red, FLinearColor::Green, 5.0f);
-		if (bResult)
+void AMyCharacter::S2C_CompletePickUpItem_Implementation(AMasterItem * Item)
+{
+	if (Item && !Item->IsPendingKill())//IsPendingKill -> 서버상에서 삭제될 아이템. 
+	{
+		AMyPlayerController* PC = Cast< AMyPlayerController>(GetController());
+		if (PC)
 		{
-			AMasterItem* Item = Cast<AMasterItem>(OutHit.Actor);
-			if(Item)
-			{
-				UE_LOG(LogClass, Warning, TEXT("%s"), *OutHit.Actor->GetName())
-			}
-			
+			int32 SlotIndex = PC->InventoryWidget->GetEmptySlot();
+			PC->InventoryWidget->SetItemSlot(SlotIndex, Item->ItemData);
 		}
 	}
-
 }

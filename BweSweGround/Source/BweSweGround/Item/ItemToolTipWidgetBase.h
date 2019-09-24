@@ -13,5 +13,13 @@ UCLASS()
 class BWESWEGROUND_API UItemToolTipWidgetBase : public UUserWidget
 {
 	GENERATED_BODY()
+public:
+	virtual void NativeConstruct() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UTextBlock* ItemName;
+
+	UFUNCTION(BlueprintCallable)
+	void SetItemName(FString Name);
 	
 };
