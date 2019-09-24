@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Item/ItemPoint.h"
 #include "Engine/World.h"
+#include "GameGS.h"
 
 AGameGM::AGameGM()
 {
@@ -23,5 +24,32 @@ void AGameGM::BeginPlay()
 	for (auto Location : ItemLocations) 
 	{
 		GetWorld()->SpawnActor<AMasterItem>(ItemClass, Location->GetTransform());
+	}
+}
+void AGameGM::PostLogin(APlayerController * NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+	AGameGS* GS = GetGameState<AGameGS>();
+	if (GS)
+	{
+		GS->LeftAlive++;
+		if (HasAuthority())
+		{
+			GS->SetAliver_OnRep();
+		}
+	}
+}
+
+void AGameGM::Logout(AController * Exiting)
+{
+	Super::Logout(Exiting);
+	AGameGS* GS = GetGameState<AGameGS>();
+	if (GS)
+	{
+		GS->LeftAlive--;
+		if (HasAuthority())//권한이 있는지 체크.
+		{
+			GS->SetAliver_OnRep();
+		}
 	}
 }

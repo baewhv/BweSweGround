@@ -28,6 +28,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 		class UButton* ItemButton;
 
+
 	void SetItem(FItemTable ItemData);
 
 	UFUNCTION()
