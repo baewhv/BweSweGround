@@ -13,5 +13,14 @@ UCLASS()
 class BWESWEGROUND_API AGameGS : public AGameStateBase
 {
 	GENERATED_BODY()
+public:
+	UPROPERTY(Replicated, VisibleAnywhere)
+	int LeftAlive = 0;
+
+	UFUNCTION()
+	void SetAliver_OnRep();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 	
 };

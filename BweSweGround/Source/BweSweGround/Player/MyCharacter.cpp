@@ -8,6 +8,7 @@
 #include "Zombie/MyZombie.h"
 #include "Game/GamePC.h"
 #include "Item/InventoryWidgetBase.h"
+#include "Game/GameWidgetBase.h"
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/InputComponent.h"
@@ -67,7 +68,7 @@ AMyCharacter::AMyCharacter()
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	SetCurrentBulletUI();
 	NormalSpringArmPosition = GetSpringArmPosition();//서 있을 때
 	CrouchSpringArmPosition = NormalSpringArmPosition + FVector(0, 0, -44.0f);	//앉아 있을 때.
 	CurrentHP = MaxHP;	//체력 초기화
@@ -436,7 +437,7 @@ void AMyCharacter::S2A_SetDie_Implementation()
 
 void AMyCharacter::Reload()
 {
-	if ((CurrentBullet != MaxBullet) && bIsAlive && !bIsReloading)
+	if ((CurrentBullet != MaxBullet) && (Magazine != 0) && bIsAlive && !bIsReloading)
 	{
 		if (bIsSprint)
 		{
@@ -450,8 +451,30 @@ void AMyCharacter::Reload()
 void AMyCharacter::Reload_End()
 {
 	bIsReloading = false;
-	CurrentBullet = MaxBullet;
+
+	if (Magazine >= MaxBullet)
+	{
+		Magazine = Magazine - (MaxBullet - CurrentBullet);
+		CurrentBullet += MaxBullet - CurrentBullet;
+	}
+	else
+	{
+		if (Magazine + CurrentBullet > MaxBullet)
+		{
+			Magazine = (Magazine + CurrentBullet) - MaxBullet;
+			CurrentBullet = MaxBullet;
+		}
+		else
+		{
+			int Mag = Magazine;
+			Magazine = 0;
+			CurrentBullet = Mag + CurrentBullet;
+		}
+	}
+
+	SetCurrentBulletUI();
 }
+
 
 void AMyCharacter::Fire()
 {
@@ -466,18 +489,17 @@ void AMyCharacter::Fire()
 	if (CurrentBullet != 0)
 	{
 		PawnNoiseEmitter->MakeNoise(this, 1.0f, GetActorLocation());
-		CurrentBullet--;
-		APlayerController* PC = GetController<APlayerController>();
+		AGamePC* PC = Cast<AGamePC>(GetController<APlayerController>());
 		if (PC)
 		{
+			CurrentBullet--;
+			SetCurrentBulletUI();
 			int32 RandX = FMath::RandRange(-3, 3);
 			PC->DeprojectScreenPositionToWorld(SizeX / 2 - RandX, SizeY / 2, WorldLocation, WorldDirection);
 			TraceStart = WorldLocation;
 			TraceEnd = TraceStart + (WorldDirection * 90000.0f);	//90미터
 
-
 			C2S_Shot(TraceStart, TraceEnd);
-			
 		}
 		FRotator PlayerRotation = GetControlRotation();
 		PlayerRotation.Pitch += FMath::RandRange(0.5f, 1.0f);
@@ -488,14 +510,12 @@ void AMyCharacter::Fire()
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), FireSound, Weapon->GetSocketLocation(TEXT("Muzzle")));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, Weapon->GetSocketTransform(TEXT("Muzzle")));
 		}
-
 		if (PC)
 		{
 			//PC->PlayerCameraManager->PlayCameraShake(UMyCameraShake::StaticClass());
 			//PC->PlayerCameraManager->PlayWorldCameraShake();	//모든 곳 흔들기?
 			PC->PlayerCameraManager->PlayCameraShake(FireCameraShake);	//카메라 쉐이크를 선택하게끔
 		}
-
 		if (bIsFire)
 		{
 			GetWorldTimerManager().SetTimer(FireTimer, this, &AMyCharacter::FireTimerFunction, 0.12);
@@ -665,7 +685,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 		FRadialDamageEvent* RadialDamageEvent = (FRadialDamageEvent*)(&DamageEvent);
 		if (RadialDamageEvent)
 		{
-			SetDamage(DamageAmount);
+			CurrentHP -= DamageAmount;
 		}
 		
 	}
@@ -675,18 +695,20 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 		if (PointDamageEvent->HitInfo.BoneName.Compare(TEXT("Head")) == 0)
 		{
 			CurrentHP = 0;
-			//SetDamage(DamageAmount*10);
+			if (bIsAlive)
+			{
+				bIsAlive = false;
+				UE_LOG(LogClass, Warning, TEXT("Die"));
+			}
 		}
 		else
 		{
 			CurrentHP -= DamageAmount;
-			//SetDamage(DamageAmount);
 		}
 	}
 	else
 	{
 		CurrentHP -= DamageAmount;
-		//SetDamage(DamageAmount);
 	}
 
 	FString HitName = FString::Printf(TEXT("Hit_%d"), FMath::RandRange(1, 4));
@@ -703,31 +725,12 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 		//GetMesh()->SetSimulatePhysics(true);
 		//bIsAlive = false;
 		
-		//SetLifeSpan(5.0f);
 	}
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
-void AMyCharacter::SetDamage(float damage)
-{
-	if (CurrentHP <= damage)
-	{
-		CurrentHP = 0.0f;
-		if (bIsAlive)
-		{
-			bIsAlive = false;
-			//GetWorld()->SpawnActor<AMyCharacter>(AMyCharacter::StaticClass(),);
-			UE_LOG(LogClass, Warning, TEXT("Die"));
-		}
-	}
-	else
-	{
-		CurrentHP -= damage;
-		UE_LOG(LogClass, Warning, TEXT("Get %f Damage! %f Left"), damage, CurrentHP);
 
-	}
-}
 
 FVector AMyCharacter::GetSpringArmPosition() const
 {
@@ -737,6 +740,34 @@ FVector AMyCharacter::GetSpringArmPosition() const
 void AMyCharacter::SetSpringArmPosition(FVector NewPosition)
 {
 	SpringArm->SetRelativeLocation(NewPosition);
+}
+
+void AMyCharacter::SetCurrentBulletUI()
+{
+	AGamePC* PC = GetController<AGamePC>();
+	if (PC)
+	{
+		PC->GameWidget->SetArmedBullet(CurrentBullet);
+		PC->GameWidget->SetMagazine(Magazine);
+	}
+}
+
+void AMyCharacter::SetCurrentAngleUI()
+{
+	AGamePC* PC = GetController<AGamePC>();
+	if (PC)
+	{
+		PC->GameWidget->SetArmedBullet(CurrentBullet);
+	}
+}
+
+void AMyCharacter::SetCurrentHPUI()
+{
+	AGamePC* PC = GetController<AGamePC>();
+	if (PC)
+	{
+		PC->GameWidget->SetArmedBullet(CurrentBullet);
+	}
 }
 
 void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

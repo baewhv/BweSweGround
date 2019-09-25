@@ -24,7 +24,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 		class UTextBlock* DegreeCount;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-		class UTextBlock* TotalBullet;
+		class UTextBlock* Magazine;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 		class UTextBlock* ArmedBullet;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
@@ -43,7 +43,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void SetArmedBullet(int32 bullet);
 	UFUNCTION(BlueprintCallable)
-		void SetTotalBullet(int32 bullet);
+		void SetMagazine(int32 bullet);
 	UFUNCTION(BlueprintCallable)
 		void SetKillLog(const FText& Text);
 	

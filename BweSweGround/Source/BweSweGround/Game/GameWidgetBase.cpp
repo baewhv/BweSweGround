@@ -14,7 +14,7 @@ void UGameWidgetBase::NativeConstruct()
 	KillCount = Cast<UTextBlock>(GetWidgetFromName(TEXT("KillCount")));
 	AliveCount = Cast<UTextBlock>(GetWidgetFromName(TEXT("AliveCount")));
 	DegreeCount = Cast<UTextBlock>(GetWidgetFromName(TEXT("DegreeCount")));
-	TotalBullet = Cast<UTextBlock>(GetWidgetFromName(TEXT("TotalBullet")));
+	Magazine = Cast<UTextBlock>(GetWidgetFromName(TEXT("TotalBullet")));
 	ArmedBullet = Cast<UTextBlock>(GetWidgetFromName(TEXT("ArmedBullet")));
 	KillLogBox = Cast<UScrollBox>(GetWidgetFromName(TEXT("KillLogBox")));
 	CurrHP = Cast<UScrollBar>(GetWidgetFromName(TEXT("CurrHP")));
@@ -57,12 +57,12 @@ void UGameWidgetBase::SetArmedBullet(int32 value)
 	}
 }
 
-void UGameWidgetBase::SetTotalBullet(int32 value)
+void UGameWidgetBase::SetMagazine(int32 value)
 {
-	if (ArmedBullet)
+	if (Magazine)
 	{
 		FString Temp = FString::Printf(TEXT("%d"), value);
-		ArmedBullet->SetText(FText::FromString(*Temp));
+		Magazine->SetText(FText::FromString(*Temp));
 	}
 }
 

@@ -20,6 +20,15 @@ public:
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UGameWidgetBase* GameWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class UGameWidgetBase> GameWidgetClass;
+
+	void ShowGameWidget();
+	void HideGameWidget();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UItemToolTipWidgetBase* ItemToolTip;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

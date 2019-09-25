@@ -35,8 +35,8 @@ void AMyHUD::DrawHUD()
 
 	if (Player)
 	{
-		FString string = FString::Printf(TEXT("HP : %.f\nAmmo : %d"), Player->CurrentHP, Player->CurrentBullet);
-		DrawText(string, FLinearColor::Blue, Canvas->SizeX/2 , Canvas->SizeY / 2);
+		//FString string = FString::Printf(TEXT("HP : %.f\nAmmo : %d"), Player->CurrentHP, Player->CurrentBullet);
+		//DrawText(string, FLinearColor::Blue, Canvas->SizeX/2 , Canvas->SizeY / 2);
 		
 		if (Player->InteractionType == EInteraction::Stealth)
 		{

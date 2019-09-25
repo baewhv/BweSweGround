@@ -14,7 +14,6 @@ class BWESWEGROUND_API ALobbyGM : public AGameModeBase
 {
 	GENERATED_BODY()
 public:
-	int a;
 	virtual void BeginPlay() override;
 	
 	UFUNCTION()

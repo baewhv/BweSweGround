@@ -5,6 +5,7 @@
 #include "Player/MyPlayerCameraManager.h"
 #include "Item/ItemToolTipWidgetBase.h"
 #include "Item/InventoryWidgetBase.h"
+#include "Game/GameWidgetBase.h"
 
 
 AGamePC::AGamePC()
@@ -17,6 +18,12 @@ void AGamePC::BeginPlay()
 	Super::BeginPlay();
 	if (IsLocalPlayerController())
 	{
+		if (GameWidgetClass)
+		{
+			GameWidget = CreateWidget<UGameWidgetBase>(this, GameWidgetClass);
+			GameWidget->AddToViewport();
+			//GameWidget->SetVisibility(ESlateVisibility::Collapsed);
+		}
 		if (ItemToolTipClass)
 		{
 			ItemToolTip = CreateWidget<UItemToolTipWidgetBase>(this, ItemToolTipClass);
@@ -29,6 +36,22 @@ void AGamePC::BeginPlay()
 			InventoryWidget->AddToViewport();
 			InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
+	}
+}
+
+void AGamePC::ShowGameWidget()
+{
+	if (GameWidget)
+	{
+		GameWidget->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void AGamePC::HideGameWidget()
+{
+	if (GameWidget)
+	{
+		GameWidget->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 

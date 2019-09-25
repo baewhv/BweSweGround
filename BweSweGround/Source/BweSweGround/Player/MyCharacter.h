@@ -182,8 +182,6 @@ public:
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)override;
 	
-	void SetDamage(float damage);
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector NormalSpringArmPosition;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -211,9 +209,15 @@ public:
 	class UAnimMontage* ReloadAnimation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int CurrentBullet = 30;
+	int32 CurrentBullet = 30;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int MaxBullet = 30;
+	int32 MaxBullet = 30;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 Magazine = 30;
+
+	void SetCurrentBulletUI();
+	void SetCurrentAngleUI();
+	void SetCurrentHPUI();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const override;
 
