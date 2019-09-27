@@ -218,6 +218,7 @@ public:
 	void SetCurrentBulletUI();
 	void SetCurrentAngleUI();
 	void SetCurrentHPUI();
+	
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const override;
 

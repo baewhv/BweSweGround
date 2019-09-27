@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "ItemToolTipWidgetBase.generated.h"
+#include "InteractToolTipWidgetBase.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BWESWEGROUND_API UItemToolTipWidgetBase : public UUserWidget
+class BWESWEGROUND_API UInteractToolTipWidgetBase : public UUserWidget
 {
 	GENERATED_BODY()
 public:

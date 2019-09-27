@@ -30,9 +30,16 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 		class UScrollBox* KillLogBox;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-		class UScrollBar* CurrHP;
+		class UProgressBar* CurrHP;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-		class UItemToolTipWidgetBase* NameToolTip;
+		class UInteractToolTipWidgetBase* NameToolTip;
+
+
+
+	void ShowItemName(FString Name);
+	void HideItemName();
+
+	void SetHPBar(float hp);
 
 	UFUNCTION(BlueprintCallable)
 		void SetAliveCount(int32 LeftAlive);

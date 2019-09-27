@@ -4,8 +4,8 @@
 #include "GameWidgetBase.h"
 #include "Components/TextBlock.h"
 #include "Components/ScrollBox.h"
-#include "Components/ScrollBar.h"
-#include "Item/ItemToolTipWidgetBase.h"
+#include "Components/ProgressBar.h"
+#include "Item/InteractToolTipWidgetBase.h"
 
 void UGameWidgetBase::NativeConstruct()
 {
@@ -17,8 +17,34 @@ void UGameWidgetBase::NativeConstruct()
 	Magazine = Cast<UTextBlock>(GetWidgetFromName(TEXT("TotalBullet")));
 	ArmedBullet = Cast<UTextBlock>(GetWidgetFromName(TEXT("ArmedBullet")));
 	KillLogBox = Cast<UScrollBox>(GetWidgetFromName(TEXT("KillLogBox")));
-	CurrHP = Cast<UScrollBar>(GetWidgetFromName(TEXT("CurrHP")));
-	NameToolTip = Cast<UItemToolTipWidgetBase>(GetWidgetFromName(TEXT("ChattingBox")));
+	CurrHP = Cast<UProgressBar>(GetWidgetFromName(TEXT("CurrHP")));
+	NameToolTip = Cast<UInteractToolTipWidgetBase>(GetWidgetFromName(TEXT("NameToolTip")));
+	HideItemName();
+}
+
+void UGameWidgetBase::ShowItemName(FString Name)
+{
+	if (NameToolTip)
+	{
+		NameToolTip->SetItemName(Name);
+		NameToolTip->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void UGameWidgetBase::HideItemName()
+{
+	if (NameToolTip)
+	{
+		NameToolTip->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+void UGameWidgetBase::SetHPBar(float hp)
+{
+	if (CurrHP)
+	{
+		CurrHP->SetPercent(hp);
+	}
 }
 
 void UGameWidgetBase::SetAliveCount(int32 LeftAlive)

@@ -3,7 +3,6 @@
 
 #include "GamePC.h"
 #include "Player/MyPlayerCameraManager.h"
-#include "Item/ItemToolTipWidgetBase.h"
 #include "Item/InventoryWidgetBase.h"
 #include "Game/GameWidgetBase.h"
 
@@ -23,12 +22,6 @@ void AGamePC::BeginPlay()
 			GameWidget = CreateWidget<UGameWidgetBase>(this, GameWidgetClass);
 			GameWidget->AddToViewport();
 			//GameWidget->SetVisibility(ESlateVisibility::Collapsed);
-		}
-		if (ItemToolTipClass)
-		{
-			ItemToolTip = CreateWidget<UItemToolTipWidgetBase>(this, ItemToolTipClass);
-			ItemToolTip->AddToViewport();
-			ItemToolTip->SetVisibility(ESlateVisibility::Collapsed);
 		}
 		if (InventoryWidgetClass)
 		{
@@ -57,18 +50,25 @@ void AGamePC::HideGameWidget()
 
 void AGamePC::ShowItemName(FString Name)
 {
-	if (ItemToolTip)
+	if (GameWidget)
 	{
-		ItemToolTip->SetItemName(Name);
-		ItemToolTip->SetVisibility(ESlateVisibility::Visible);
+		GameWidget->ShowItemName(Name);
 	}
 }
 
 void AGamePC::HideItemName()
 {
-	if (ItemToolTip)
+	if (GameWidget)
 	{
-		ItemToolTip->SetVisibility(ESlateVisibility::Collapsed);
+		GameWidget->HideItemName();
+	}
+}
+
+void AGamePC::SetHPBar(float hp)
+{
+	if (GameWidget)
+	{
+		GameWidget->SetHPBar(hp);
 	}
 }
 

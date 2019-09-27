@@ -68,10 +68,11 @@ AMyCharacter::AMyCharacter()
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	SetCurrentBulletUI();
 	NormalSpringArmPosition = GetSpringArmPosition();//서 있을 때
 	CrouchSpringArmPosition = NormalSpringArmPosition + FVector(0, 0, -44.0f);	//앉아 있을 때.
 	CurrentHP = MaxHP;	//체력 초기화
+	SetCurrentBulletUI();
+	SetCurrentHPUI();
 
 	GetWorldTimerManager().SetTimer(LookItemHandler, this, &AMyCharacter::TraceObject, 0.1f, true);;
 }
@@ -726,6 +727,8 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 		//bIsAlive = false;
 		
 	}
+	SetCurrentHPUI();
+
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
@@ -764,9 +767,18 @@ void AMyCharacter::SetCurrentAngleUI()
 void AMyCharacter::SetCurrentHPUI()
 {
 	AGamePC* PC = GetController<AGamePC>();
+
 	if (PC)
 	{
-		PC->GameWidget->SetArmedBullet(CurrentBullet);
+		if (CurrentHP == 0)
+		{
+			PC->SetHPBar(0);
+		}
+		else
+		{
+			PC->SetHPBar(CurrentHP / MaxHP);
+		}
+
 	}
 }
 

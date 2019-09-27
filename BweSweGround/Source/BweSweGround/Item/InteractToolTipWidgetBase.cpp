@@ -1,17 +1,17 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ItemToolTipWidgetBase.h"
+#include "InteractToolTipWidgetBase.h"
 #include "Components/TextBlock.h"
 
-void UItemToolTipWidgetBase::NativeConstruct()
+void UInteractToolTipWidgetBase::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 	ItemName = Cast<UTextBlock>(GetWidgetFromName(TEXT("ItemName")));
 }
 
-void UItemToolTipWidgetBase::SetItemName(FString Name)
+void UInteractToolTipWidgetBase::SetItemName(FString Name)
 {
 	if (ItemName)
 	{

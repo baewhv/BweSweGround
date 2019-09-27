@@ -28,14 +28,10 @@ public:
 	void ShowGameWidget();
 	void HideGameWidget();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UItemToolTipWidgetBase* ItemToolTip;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<class UItemToolTipWidgetBase> ItemToolTipClass;
-
 	void ShowItemName(FString Name);
 	void HideItemName();
+
+	void SetHPBar(float hp);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UInventoryWidgetBase* InventoryWidget;
