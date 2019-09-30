@@ -60,11 +60,11 @@ public:
 	void Sprint_Start();
 	void Sprint_End();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(Server, Reliable)
 	void C2S_Sprint_Start();
 	void C2S_Sprint_Start_Implementation();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(Server, Reliable)
 	void C2S_Sprint_End();
 	void C2S_Sprint_End_Implementation();
 
@@ -114,9 +114,13 @@ public:
 	FRotator CameraRotation;
 	int32 SizeX;
 	int32 SizeY;
+	UPROPERTY(Replicated)
 	FVector WorldLocation;
+	UPROPERTY(Replicated)
 	FVector WorldDirection;
+	UPROPERTY(Replicated)
 	FVector TraceStart;
+	UPROPERTY(Replicated)
 	FVector TraceEnd;
 
 	AActor* InteractTarget;
@@ -124,15 +128,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
 	float WalkSpeed = 600.0f;
 
+	UPROPERTY(Replicated)
 	float SprintSpeed = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
 	float SprintSpeedValue = 1.5f;
-	//
-	//float CrouchSpeed = 1.0f;
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
-	//float CrouchSpeedValue = 1.0f;
 
+	UPROPERTY(Replicated)
 	float AimSpeed = 1.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
 	float AimSpeedValue = 0.6f;

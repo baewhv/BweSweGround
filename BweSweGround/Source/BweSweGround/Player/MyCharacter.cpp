@@ -250,12 +250,6 @@ void AMyCharacter::Turn(float Value)
 
 void AMyCharacter::Sprint_Start()
 {
-	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (GI)
-	{
-		FString UserID = GI->GetUserID();
-		UE_LOG(LogClass, Warning, TEXT("%s : Sprint_Start"), *UserID);
-	}
 	if (bIsMotion || !bIsAlive || bIsStealthKill || (ForwardValue == 0.0f && RightValue == 0.0f))
 	{
 		return;
@@ -293,30 +287,6 @@ void AMyCharacter::Sprint_End()
 
 void AMyCharacter::C2S_Sprint_Start_Implementation()
 {
-	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (GI)
-	{
-		FString UserID = GI->GetUserID();
-		UE_LOG(LogClass, Warning, TEXT("%s : C2S_Sprint_Start_Implementation"), *UserID);
-	}
-	if (bIsMotion || !bIsAlive || bIsStealthKill || (ForwardValue == 0.0f && RightValue == 0.0f))
-	{
-		return;
-	}
-	if (bIsAim)
-	{
-		Aim_End();
-	}
-	if (bIsCrouched)
-	{
-		UnCrouch();
-	}
-	if (bIsReloading)
-	{
-		bIsReloading = false;
-	}
-	bUseControllerRotationYaw = false;
-	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsSprint = true;
 	SprintSpeed = SprintSpeedValue;
 }
@@ -325,8 +295,6 @@ void AMyCharacter::C2S_Sprint_End_Implementation()
 {
 	if (bIsSprint)
 	{
-		bUseControllerRotationYaw = true;
-		GetCharacterMovement()->bOrientRotationToMovement = false;
 		bIsSprint = false;
 		SprintSpeed = 1.0f;
 	}
@@ -490,7 +458,7 @@ void AMyCharacter::Fire()
 	if (CurrentBullet != 0)
 	{
 		PawnNoiseEmitter->MakeNoise(this, 1.0f, GetActorLocation());
-		AGamePC* PC = Cast<AGamePC>(GetController<APlayerController>());
+		AGamePC* PC = GetController<AGamePC>();
 		if (PC)
 		{
 			CurrentBullet--;
@@ -499,7 +467,6 @@ void AMyCharacter::Fire()
 			PC->DeprojectScreenPositionToWorld(SizeX / 2 - RandX, SizeY / 2, WorldLocation, WorldDirection);
 			TraceStart = WorldLocation;
 			TraceEnd = TraceStart + (WorldDirection * 90000.0f);	//90미터
-
 			C2S_Shot(TraceStart, TraceEnd);
 		}
 		FRotator PlayerRotation = GetControlRotation();
@@ -566,6 +533,8 @@ void AMyCharacter::C2S_Shot_Implementation(FVector _TraceStart, FVector _TraceEn
 
 	FHitResult OutHit;
 
+	UE_LOG(LogTemp, Log, TEXT("%s"), *_TraceEnd.ToString());
+	
 	bool bResult = UKismetSystemLibrary::LineTraceSingleForObjects(
 		GetWorld(),
 		_TraceStart,
@@ -573,7 +542,7 @@ void AMyCharacter::C2S_Shot_Implementation(FVector _TraceStart, FVector _TraceEn
 		ObjectType,
 		false,
 		IgnoreActors,
-		EDrawDebugTrace::None,	//그리지 않겠다. / ForDuration -> 일정 시간만
+		EDrawDebugTrace::ForDuration,	//그리지 않겠다. / ForDuration -> 일정 시간만
 		OutHit,
 		true,
 		FLinearColor::Red, FLinearColor::Green, 5.0f);
@@ -794,6 +763,11 @@ void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(AMyCharacter, bIsFire);
 	DOREPLIFETIME(AMyCharacter, bIsReloading);
 	DOREPLIFETIME(AMyCharacter, bIsStealthKill);
+	DOREPLIFETIME(AMyCharacter, SprintSpeed);
+	DOREPLIFETIME(AMyCharacter, WorldLocation);
+	DOREPLIFETIME(AMyCharacter, WorldDirection);
+	DOREPLIFETIME(AMyCharacter, TraceStart);
+	DOREPLIFETIME(AMyCharacter, TraceEnd);
 }
 
 
