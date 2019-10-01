@@ -36,6 +36,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(Server, Reliable)
+	void C2S_InitProperty();
+	void C2S_InitProperty_Implementation();
+
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -84,6 +89,14 @@ public:
 
 	void StartFire();
 	void StopFire();
+
+	UFUNCTION(Server, Reliable)
+	void C2S_StartFire();
+	void C2S_StartFire_Implementation();
+
+	UFUNCTION(Server, Reliable)
+	void C2S_StopFire();
+	void C2S_StopFire_Implementation();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void S2A_SetDie();
@@ -166,6 +179,7 @@ public:
 	UFUNCTION()
 	void FireTimerFunction();
 
+#pragma region Property-Effects
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
 	class UParticleSystem* BloodEffect;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
@@ -176,11 +190,11 @@ public:
 	class USoundBase* FireSound;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
 	class USoundBase* StuckSound;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
 	class UMaterialInterface* BulletDecal;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
 	class UMaterialInterface* BulletDecalBlood;
+#pragma endregion
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)override;
 	
@@ -198,10 +212,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class UCameraShake> FireCameraShake;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
-	float CurrentHP = 100.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float MaxHP = 100.0f;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UAnimMontage* DeadAnimation;
@@ -209,6 +220,11 @@ public:
 	class UAnimMontage* HitAnimation;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UAnimMontage* ReloadAnimation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing = SetCurrentHPUI_OnRep)
+		float CurrentHP = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float MaxHP = 100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 CurrentBullet = 30;
@@ -218,20 +234,17 @@ public:
 	int32 Magazine = 30;
 
 	void SetCurrentBulletUI();
-	void SetCurrentAngleUI();
-	void SetCurrentHPUI();
-	
+	UFUNCTION()
+	void SetCurrentHPUI_OnRep();
+	void SetCurrentDegreeUI();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const override;
 
-
-
 	FTimerHandle LookItemHandler;
-
 
 	FHitResult PickUpItem;
 	UFUNCTION()
-		void PickUp();
+	void PickUp();
 
 	UFUNCTION(Server, Reliable)
 	void C2S_CheckPickUpItem(class AMasterItem* Item);

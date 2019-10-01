@@ -39,13 +39,20 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		class UPawnSensingComponent* PawnSensing;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		class UWidgetComponent* HPWidget;
+	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
-		float WalkSpeed = 100.0f;
-
+	float WalkSpeed = 100.0f;
 	float RunSpeed = 600.0f;
-
+	
 	void Sprint_Start();
 	void Sprint_End();
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	uint8 bIsSprint : 1;
 
@@ -75,8 +82,7 @@ public:
 	class UBehaviorTree* ZombieAI;
 
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	class UPawnSensingComponent* PawnSensing;
+	
 
 	UFUNCTION()			//다른 컴포넌트의 델리게이트 호출방법(in h)
 	void OnSeenPawn(APawn* PP);

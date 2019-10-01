@@ -30,7 +30,6 @@
 // Sets default values
 AMyCharacter::AMyCharacter()
 {
-
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -56,10 +55,7 @@ AMyCharacter::AMyCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->CrouchedHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 	//앉았을 때 캡슐 콜라이더 수정
-	bIsMotion = false;
-	bIsAlive = true;
-	bIsReloading = false;
-	bIsStealthKill = false;
+	
 	Tags.Add(TEXT("Character"));
 	Tags.Add(TEXT("Player"));
 }
@@ -70,12 +66,14 @@ void AMyCharacter::BeginPlay()
 	Super::BeginPlay();
 	NormalSpringArmPosition = GetSpringArmPosition();//서 있을 때
 	CrouchSpringArmPosition = NormalSpringArmPosition + FVector(0, 0, -44.0f);	//앉아 있을 때.
-	CurrentHP = MaxHP;	//체력 초기화
 	SetCurrentBulletUI();
-	SetCurrentHPUI();
+	SetCurrentHPUI_OnRep();
+	SetCurrentDegreeUI();
 
 	GetWorldTimerManager().SetTimer(LookItemHandler, this, &AMyCharacter::TraceObject, 0.1f, true);;
+	C2S_InitProperty();
 }
+
 
 // Called every frame
 void AMyCharacter::Tick(float DeltaTime)
@@ -87,6 +85,16 @@ void AMyCharacter::Tick(float DeltaTime)
 	//FString Temp = FString::Printf(TEXT("Pos (%f, %f)"),ForwardValue, RightValue);
 	//UKismetSystemLibrary::PrintString(GetWorld(), Temp);
 	
+}
+
+
+void AMyCharacter::C2S_InitProperty_Implementation()
+{
+	bIsMotion = false;
+	bIsAlive = true;
+	bIsReloading = false;
+	bIsStealthKill = false;
+	CurrentHP = MaxHP;	//체력 초기화
 }
 
 // Called to bind functionality to input
@@ -121,7 +129,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMyCharacter::TraceObject()
 {
-	
+
 	AGamePC* PC = GetController<AGamePC>();
 	if (PC)
 	{
@@ -245,6 +253,7 @@ void AMyCharacter::Turn(float Value)
 	if (Value != 0)
 	{
 		AddControllerYawInput(Value);
+		SetCurrentDegreeUI();
 	}
 }
 
@@ -287,6 +296,8 @@ void AMyCharacter::Sprint_End()
 
 void AMyCharacter::C2S_Sprint_Start_Implementation()
 {
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsSprint = true;
 	SprintSpeed = SprintSpeedValue;
 }
@@ -295,6 +306,8 @@ void AMyCharacter::C2S_Sprint_End_Implementation()
 {
 	if (bIsSprint)
 	{
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
 		bIsSprint = false;
 		SprintSpeed = 1.0f;
 	}
@@ -379,9 +392,24 @@ void AMyCharacter::StartFire()
 			Stuck();
 		}
 	}
+	C2S_StartFire();
+}
+
+void AMyCharacter::C2S_StartFire_Implementation()
+{
+	if (bIsAlive)
+	{
+		bIsFire = true;
+	}
 }
 
 void AMyCharacter::StopFire()
+{
+	bIsFire = false;
+	C2S_StopFire();
+}
+
+void AMyCharacter::C2S_StopFire_Implementation()
 {
 	bIsFire = false;
 }
@@ -533,12 +561,10 @@ void AMyCharacter::C2S_Shot_Implementation(FVector _TraceStart, FVector _TraceEn
 
 	FHitResult OutHit;
 
-	UE_LOG(LogTemp, Log, TEXT("%s"), *_TraceEnd.ToString());
-	
 	bool bResult = UKismetSystemLibrary::LineTraceSingleForObjects(
 		GetWorld(),
 		_TraceStart,
-		TraceEnd,
+		_TraceEnd,
 		ObjectType,
 		false,
 		IgnoreActors,
@@ -566,7 +592,7 @@ void AMyCharacter::C2S_Shot_Implementation(FVector _TraceStart, FVector _TraceEn
 		//범위 대미지
 		//UGameplayStatics::ApplyRadialDamage(GetWorld(), 30.0f, OutHit.ImpactPoint, 500.0f, nullptr, IgnoreActors, this, GetController(), false, ECollisionChannel::ECC_Visibility);
 		//포인트 대미지
-		UGameplayStatics::ApplyPointDamage(OutHit.GetActor(), 10.0f, TraceEnd - TraceStart, OutHit, GetController(), this, nullptr);
+		UGameplayStatics::ApplyPointDamage(OutHit.GetActor(), 10.0f, _TraceEnd - _TraceStart, OutHit, GetController(), this, nullptr);
 
 	}
 
@@ -646,6 +672,7 @@ void AMyCharacter::FireTimerFunction()
 
 float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
 {
+	
 	if (CurrentHP == 0)	//또 죽이지 않도록 방지
 	{
 		return 0;
@@ -668,7 +695,6 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 			if (bIsAlive)
 			{
 				bIsAlive = false;
-				UE_LOG(LogClass, Warning, TEXT("Die"));
 			}
 		}
 		else
@@ -696,7 +722,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 		//bIsAlive = false;
 		
 	}
-	SetCurrentHPUI();
+	SetCurrentHPUI_OnRep();
 
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -724,16 +750,8 @@ void AMyCharacter::SetCurrentBulletUI()
 	}
 }
 
-void AMyCharacter::SetCurrentAngleUI()
-{
-	AGamePC* PC = GetController<AGamePC>();
-	if (PC)
-	{
-		PC->GameWidget->SetArmedBullet(CurrentBullet);
-	}
-}
 
-void AMyCharacter::SetCurrentHPUI()
+void AMyCharacter::SetCurrentHPUI_OnRep()
 {
 	AGamePC* PC = GetController<AGamePC>();
 
@@ -748,6 +766,27 @@ void AMyCharacter::SetCurrentHPUI()
 			PC->SetHPBar(CurrentHP / MaxHP);
 		}
 
+	}
+}
+
+void AMyCharacter::SetCurrentDegreeUI()
+{
+	AGamePC* PC = GetController<AGamePC>();
+
+	if (PC)
+	{
+		if (GetActorForwardVector().X > 0.999f )
+		{
+			PC->GameWidget->SetLocationDegree(360);
+		}
+		else if (GetActorForwardVector().X < -0.999f )
+		{
+			PC->GameWidget->SetLocationDegree(0);
+		}
+		else
+		{
+			PC->GameWidget->SetLocationDegree((int32)(GetActorForwardVector().X * 180 + 180));
+		}
 	}
 }
 
@@ -769,8 +808,6 @@ void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(AMyCharacter, TraceStart);
 	DOREPLIFETIME(AMyCharacter, TraceEnd);
 }
-
-
 
 void AMyCharacter::PickUp()
 {

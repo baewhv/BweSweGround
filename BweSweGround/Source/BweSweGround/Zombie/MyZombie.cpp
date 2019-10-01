@@ -13,6 +13,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "SpawnManager.h"
 #include "Animation/AnimInstance.h"
+#include "Components/WidgetComponent.h"
+#include "Game/ZombieHPBarWidgetBase.h"
 
 // Sets default values
 AMyZombie::AMyZombie()
@@ -23,6 +25,12 @@ AMyZombie::AMyZombie()
 	/*GetMesh()->SetRelativeLocation(FVector(0, 0, -88.0f));
 	GetMesh()->SetRelativeRotation(FRotator(0, -90.0f, 0));*/
 
+	HPWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidget"));
+	HPWidget->SetupAttachment(this->GetCapsuleComponent());
+
+	//HPWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	HPWidget->SetRelativeLocation(FVector(0,0,GetCapsuleComponent()->GetScaledCapsuleHalfHeight()*4));
+	
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88.0f), FRotator(0, -90.0f, 0));
 
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
@@ -38,7 +46,11 @@ AMyZombie::AMyZombie()
 void AMyZombie::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	UZombieHPBarWidgetBase* SetZombieHpWidget = Cast<UZombieHPBarWidgetBase>(HPWidget->GetWidgetClass());
+	if (SetZombieHpWidget)
+	{
+		
+	}
 	CurrentHP = MaxHP;
 	bIsAttack = false;
 	bIsStealthKilled = false;
@@ -115,6 +127,14 @@ float AMyZombie::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent
 	if (CurrentHP == 0)
 	{
 		SetDie();
+	}
+	
+
+	UZombieHPBarWidgetBase* SetZombieHpWidget = Cast<UZombieHPBarWidgetBase>(HPWidget->GetUserWidgetObject());
+	if (SetZombieHpWidget)
+	{
+		UE_LOG(LogClass, Warning, TEXT("come here"));
+		SetZombieHpWidget->SetZombieHP(CurrentHP);
 	}
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);

@@ -44,5 +44,5 @@ public:
 
 	virtual void SetupInputComponent() override;
 
-	void Inventory();
+	void InventoryToggle();
 };

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "GameWidgetBase.h"
@@ -69,7 +69,7 @@ void UGameWidgetBase::SetLocationDegree(int32 Degree)
 {
 	if (DegreeCount)
 	{
-		FString Temp = FString::Printf(TEXT("%d¢ª"), Degree);
+		FString Temp = FString::Printf(TEXT("%dËš"), Degree);
 		DegreeCount->SetText(FText::FromString(*Temp));
 	}
 }
@@ -102,7 +102,7 @@ void UGameWidgetBase::SetKillLog(const FText & Text)
 			NewBlock->SetText(Text);
 			NewBlock->Font.Size = 18.0f;
 			KillLogBox->AddChild(NewBlock);
-			KillLogBox->ScrollToEnd();	//Ã¤ÆÃÃ¢ À§Ä¡ ¸®¼Â.
+			KillLogBox->ScrollToEnd();	//ì±„íŒ…ì°½ ìœ„ì¹˜ ë¦¬ì…‹.
 		}
 	}
 }

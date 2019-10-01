@@ -86,15 +86,16 @@ void AGamePC::HideInventory()
 	SetInputMode(FInputModeGameOnly());
 }
 
+
+
 void AGamePC::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	UE_LOG(LogClass, Warning, TEXT("Binding"));
-	InputComponent->BindAction(TEXT("Inventory"), IE_Pressed, this, &AGamePC::Inventory);
+	InputComponent->BindAction(TEXT("Inventory"), IE_Pressed, this, &AGamePC::InventoryToggle);
 }
 
-void AGamePC::Inventory()
+void AGamePC::InventoryToggle()
 {
 	if (InventoryWidget->GetVisibility() == ESlateVisibility::Visible)
 	{
