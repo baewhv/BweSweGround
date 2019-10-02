@@ -65,10 +65,14 @@ public:
 	void SetDie();
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing = SetHPWidget_OnRep)
 		float CurrentHP = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		float MaxHP = 100.0f;
+
+	UFUNCTION()
+		void SetHPWidget_OnRep();
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		class UAnimMontage* DeadAnimation;
@@ -81,9 +85,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class UBehaviorTree* ZombieAI;
 
-	
-	
-
 	UFUNCTION()			//다른 컴포넌트의 델리게이트 호출방법(in h)
 	void OnSeenPawn(APawn* PP);
 
@@ -93,7 +94,9 @@ public:
 	void Attack();
 
 	UPROPERTY(VisibleAnywhere)
-		ASpawnManager* SpawnPoint;
+	ASpawnManager* SpawnPoint;
 
 	void getSpawnPoint(ASpawnManager* point);
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

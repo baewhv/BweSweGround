@@ -15,6 +15,7 @@
 #include "Animation/AnimInstance.h"
 #include "Components/WidgetComponent.h"
 #include "Game/ZombieHPBarWidgetBase.h"
+#include "UnrealNetwork.h"
 
 // Sets default values
 AMyZombie::AMyZombie()
@@ -29,7 +30,7 @@ AMyZombie::AMyZombie()
 	HPWidget->SetupAttachment(this->GetCapsuleComponent());
 
 	//HPWidget->SetWidgetSpace(EWidgetSpace::Screen);
-	HPWidget->SetRelativeLocation(FVector(0,0,GetCapsuleComponent()->GetScaledCapsuleHalfHeight()*4));
+	
 	
 	GetMesh()->SetRelativeLocationAndRotation(FVector(0, 0, -88.0f), FRotator(0, -90.0f, 0));
 
@@ -46,16 +47,14 @@ AMyZombie::AMyZombie()
 void AMyZombie::BeginPlay()
 {
 	Super::BeginPlay();
-	UZombieHPBarWidgetBase* SetZombieHpWidget = Cast<UZombieHPBarWidgetBase>(HPWidget->GetWidgetClass());
-	if (SetZombieHpWidget)
-	{
-		
-	}
+
+	HPWidget->SetRelativeLocation(FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2 - 50));
 	CurrentHP = MaxHP;
 	bIsAttack = false;
 	bIsStealthKilled = false;
 	PawnSensing->OnSeePawn.AddDynamic(this, &AMyZombie::OnSeenPawn);		//다른 컴포넌트의 델리게이트 호출방법(in cpp)
 	PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
+	
 
 }
 
@@ -63,6 +62,17 @@ void AMyZombie::BeginPlay()
 void AMyZombie::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PC)
+	{
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		PC->GetPlayerViewPoint(CameraLocation, CameraRotation);
+		CameraRotation = FRotator(-CameraRotation.Pitch, CameraRotation.Yaw + 180.0f, CameraRotation.Roll);
+		HPWidget->SetWorldRotation(CameraRotation);
+		float Dist = FVector::Distance(CameraLocation, GetActorLocation());
+		HPWidget->SetRelativeScale3D(FVector::OneVector * (Dist / 500.0f));
+	}
 
 }
 
@@ -121,20 +131,13 @@ float AMyZombie::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent
 		FString HitName = FString::Printf(TEXT("Hit%d"), FMath::RandRange(1, 2));
 		PlayAnimMontage(HitAnimation, 1.0f, FName(*HitName));
 	}
+	SetHPWidget_OnRep();
 
 	CurrentHP = FMath::Clamp<float>(CurrentHP, 0, MaxHP);	//체력을 보정(-로 떨어져도 0으로 고정)
 
 	if (CurrentHP == 0)
 	{
 		SetDie();
-	}
-	
-
-	UZombieHPBarWidgetBase* SetZombieHpWidget = Cast<UZombieHPBarWidgetBase>(HPWidget->GetUserWidgetObject());
-	if (SetZombieHpWidget)
-	{
-		UE_LOG(LogClass, Warning, TEXT("come here"));
-		SetZombieHpWidget->SetZombieHP(CurrentHP);
 	}
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -151,6 +154,21 @@ void AMyZombie::SetDie()
 	{
 		AIC->SetCurrentState(CurrentState);
 	}
+}
+
+void AMyZombie::SetHPWidget_OnRep()
+{
+	UZombieHPBarWidgetBase* SetZombieHpWidget = Cast<UZombieHPBarWidgetBase>(HPWidget->GetUserWidgetObject());
+	if (SetZombieHpWidget)
+	{
+		UE_LOG(LogClass, Warning, TEXT("SetHPWidget_OnRep"));
+		SetZombieHpWidget->SetZombieHP(CurrentHP);
+	}
+	else
+	{
+		UE_LOG(LogClass, Warning, TEXT("Fail!"));
+	}
+
 }
 
 void AMyZombie::Attack()
@@ -214,4 +232,11 @@ void AMyZombie::OnHearedNoise(APawn * pawn, const FVector & Location, float Volu
 void AMyZombie::getSpawnPoint(ASpawnManager * point)
 {
 	SpawnPoint = point;
+}
+
+void AMyZombie::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AMyZombie, CurrentHP);
 }
