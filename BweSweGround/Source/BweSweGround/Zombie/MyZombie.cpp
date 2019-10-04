@@ -2,19 +2,20 @@
 
 
 #include "MyZombie.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Components/CapsuleComponent.h"
-#include "Perception/PawnSensingComponent.h"
 #include "Zombie/AI/ZombieAIController.h"
+#include "Player/MyCharacter.h"
+#include "Game/ZombieHPBarWidgetBase.h"
+#include "SpawnManager.h"
+
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/WidgetComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Perception/PawnSensingComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Player/MyCharacter.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "SpawnManager.h"
 #include "Animation/AnimInstance.h"
-#include "Components/WidgetComponent.h"
-#include "Game/ZombieHPBarWidgetBase.h"
 #include "UnrealNetwork.h"
 
 // Sets default values
@@ -49,13 +50,11 @@ void AMyZombie::BeginPlay()
 	Super::BeginPlay();
 
 	HPWidget->SetRelativeLocation(FVector(0, 0, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2 - 50));
-	CurrentHP = MaxHP;
-	bIsAttack = false;
-	bIsStealthKilled = false;
+
 	PawnSensing->OnSeePawn.AddDynamic(this, &AMyZombie::OnSeenPawn);		//다른 컴포넌트의 델리게이트 호출방법(in cpp)
 	PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
 	
-
+	C2S_initProperty();
 }
 
 // Called every frame
@@ -73,23 +72,42 @@ void AMyZombie::Tick(float DeltaTime)
 		float Dist = FVector::Distance(CameraLocation, GetActorLocation());
 		HPWidget->SetRelativeScale3D(FVector::OneVector * (Dist / 500.0f));
 	}
-
 }
 
 // Called to bind functionality to input
 void AMyZombie::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
 
+void AMyZombie::C2S_initProperty_Implementation()
+{
+	CurrentHP = MaxHP;
+	bIsAttack = false;
+	bIsStealthKilled = false;
 }
 
 void AMyZombie::Sprint_Start()
 {
 	bIsSprint = true;
 	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	C2S_Sprint_Start();
+}
+
+void AMyZombie::C2S_Sprint_Start_Implementation()
+{
+	bIsSprint = true;
+	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
 void AMyZombie::Sprint_End()
+{
+	bIsSprint = false;
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	C2S_Sprint_End();
+}
+
+void AMyZombie::C2S_Sprint_End_Implementation()
 {
 	bIsSprint = false;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
@@ -137,15 +155,17 @@ float AMyZombie::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent
 
 	if (CurrentHP == 0)
 	{
-		SetDie();
+		S2A_SetDie();
 	}
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
-void AMyZombie::SetDie()
+void AMyZombie::S2A_SetDie_Implementation()
 {
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
+	//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("DeadBody"));
+
 
 	CurrentState = EZombieState::Dead;
 
@@ -162,7 +182,7 @@ void AMyZombie::SetHPWidget_OnRep()
 	if (SetZombieHpWidget)
 	{
 		UE_LOG(LogClass, Warning, TEXT("SetHPWidget_OnRep"));
-		SetZombieHpWidget->SetZombieHP(CurrentHP);
+		SetZombieHpWidget->SetZombieHP(CurrentHP/MaxHP);
 	}
 	else
 	{
@@ -198,7 +218,6 @@ void AMyZombie::OnSeenPawn(APawn * PP)
 		return;
 	}
 
-	//UE_LOG(LogClass, Warning, TEXT("Active"));
 	if ((CurrentState == EZombieState::Normal || CurrentState == EZombieState::Alert) && PP->ActorHasTag(TEXT("Player")) && Player->CurrentHP > 0)
 	{
 		CurrentState = EZombieState::Chase;
@@ -239,4 +258,8 @@ void AMyZombie::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AMyZombie, CurrentHP);
+	DOREPLIFETIME(AMyZombie, bIsSprint);
+	DOREPLIFETIME(AMyZombie, bIsAttack);
+	DOREPLIFETIME(AMyZombie, CurrentState);
+
 }

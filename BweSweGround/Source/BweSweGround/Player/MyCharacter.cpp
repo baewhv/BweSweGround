@@ -12,7 +12,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/InputComponent.h"
-#include "Components/SkeletalMeshComponent.h"
+
 #include "Components/DecalComponent.h" 
 #include "Components/CapsuleComponent.h"
 #include "Components/PawnNoiseEmitterComponent.h"
@@ -113,10 +113,10 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Pressed, this, &AMyCharacter::Aim_Start);
 	PlayerInputComponent->BindAction(TEXT("Aim"), IE_Released, this, &AMyCharacter::Aim_End);
 
-	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &AMyCharacter::Crouch_Start);
-	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Released, this, &AMyCharacter::Crouch_End);
+	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &AMyCharacter::Crouch_Toggle);
+	//PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Released, this, &AMyCharacter::Crouch_End);
 
-	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AMyCharacter::Jump);	//캐릭터.cpp에서 상속받은 함수를 불러옴
+	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AMyCharacter::Jump);	//UCharacter.h에서 상속받은 함수를 불러옴
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &AMyCharacter::StopJumping);
 
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMyCharacter::StartFire);
@@ -349,7 +349,7 @@ void AMyCharacter::C2S_Aim_End_Implementation()
 	AimSpeed = 1.0f;
 }
 
-void AMyCharacter::Crouch_Start()
+void AMyCharacter::Crouch_Toggle()	//현재 토글로써 기능.
 {
 	if (bIsMotion)
 	{
@@ -372,11 +372,6 @@ void AMyCharacter::Crouch_Start()
 	}
 }
 
-void AMyCharacter::Crouch_End()
-{
-	//bIsCrouch = false;
-	//CrouchSpeed = 1.0f;
-}
 
 void AMyCharacter::StartFire()
 {
@@ -468,7 +463,6 @@ void AMyCharacter::Reload_End()
 			CurrentBullet = Mag + CurrentBullet;
 		}
 	}
-
 	SetCurrentBulletUI();
 }
 
@@ -568,7 +562,7 @@ void AMyCharacter::C2S_Shot_Implementation(FVector _TraceStart, FVector _TraceEn
 		ObjectType,
 		false,
 		IgnoreActors,
-		EDrawDebugTrace::ForDuration,	//그리지 않겠다. / ForDuration -> 일정 시간만
+		EDrawDebugTrace::None,	//그리지 않겠다. / ForDuration -> 일정 시간만
 		OutHit,
 		true,
 		FLinearColor::Red, FLinearColor::Green, 5.0f);
@@ -600,8 +594,17 @@ void AMyCharacter::C2S_Shot_Implementation(FVector _TraceStart, FVector _TraceEn
 
 void AMyCharacter::S2A_SpawnDecalAndEffect_Implementation(FHitResult OutHit, UParticleSystem * Hit, UMaterialInterface * DecalP)
 {
+	ACharacter* Pawn = Cast<ACharacter>(OutHit.GetActor());
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Hit, OutHit.ImpactPoint + OutHit.ImpactNormal * 5.0f, OutHit.ImpactNormal.Rotation());
-	UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DecalP, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
+	UDecalComponent* Decal;
+	if (Pawn)
+	{
+		Decal = UGameplayStatics::SpawnDecalAttached(DecalP, FVector(5, 5, 5), Pawn->GetMesh(), OutHit.BoneName, OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation(), EAttachLocation::KeepWorldPosition, 5.0f);
+	}
+	else
+	{
+		Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DecalP, FVector(5, 5, 5), OutHit.ImpactPoint, OutHit.ImpactNormal.Rotation());
+	}
 	Decal->SetFadeScreenSize(0.001f);
 }
 
@@ -641,7 +644,7 @@ void AMyCharacter::StartStealthKill()
 		Enemy->SetActorRotation(GetActorRotation());
 		Enemy->SetActorLocation(NewLocation);
 		Enemy->bIsStealthKilled = true;
-		Enemy->SetDie();
+		Enemy->S2A_SetDie();
 	}
 }
 
@@ -692,10 +695,6 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 		if (PointDamageEvent->HitInfo.BoneName.Compare(TEXT("Head")) == 0)
 		{
 			CurrentHP = 0;
-			if (bIsAlive)
-			{
-				bIsAlive = false;
-			}
 		}
 		else
 		{
@@ -712,18 +711,11 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 	bIsReloading = false;
 	CurrentHP = FMath::Clamp<float>(CurrentHP, 0, MaxHP);	//체력을 보정(-로 떨어져도 0으로 고정)
 
-	if (CurrentHP == 0)
+	if (CurrentHP <= 0)
 	{
-		
 		S2A_SetDie();
-		//GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//콜리전 끄기
-		//GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);	//메쉬 물리 체크 켜기.
-		//GetMesh()->SetSimulatePhysics(true);
-		//bIsAlive = false;
-		
 	}
 	SetCurrentHPUI_OnRep();
-
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
@@ -765,27 +757,22 @@ void AMyCharacter::SetCurrentHPUI_OnRep()
 		{
 			PC->SetHPBar(CurrentHP / MaxHP);
 		}
-
 	}
 }
 
 void AMyCharacter::SetCurrentDegreeUI()
 {
 	AGamePC* PC = GetController<AGamePC>();
-
-	if (PC)
+	//UE_LOG(LogClass, Warning, TEXT("%s"), *GetActorForwardVector().ToString());
+	if (PC)	//일단 임시로 이렇게 만들고, 추후에 개선해보자.
 	{
-		if (GetActorForwardVector().X > 0.999f )
+		if (GetActorForwardVector().Y > 0)
 		{
-			PC->GameWidget->SetLocationDegree(360);
-		}
-		else if (GetActorForwardVector().X < -0.999f )
-		{
-			PC->GameWidget->SetLocationDegree(0);
+			PC->GameWidget->SetLocationDegree(90 - GetActorForwardVector().X * 90);
 		}
 		else
 		{
-			PC->GameWidget->SetLocationDegree((int32)(GetActorForwardVector().X * 180 + 180));
+			PC->GameWidget->SetLocationDegree(270 + GetActorForwardVector().X * 90);
 		}
 	}
 }
@@ -816,7 +803,6 @@ void AMyCharacter::PickUp()
 	if (Item)
 	{
 		C2S_CheckPickUpItem(Item);
-		
 	}
 	else
 	{
@@ -828,9 +814,7 @@ void AMyCharacter::C2S_CheckPickUpItem_Implementation(AMasterItem * Item)
 {
 	if (Item&& !Item->IsPendingKill())//IsPendingKill -> 서버상에서 삭제될 아이템. 
 	{
-
 		S2C_CompletePickUpItem(Item);
-		
 		Item->Destroy();
 	}
 }

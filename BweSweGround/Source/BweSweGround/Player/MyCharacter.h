@@ -84,8 +84,7 @@ public:
 	void C2S_Aim_End();
 	void C2S_Aim_End_Implementation();
 
-	void Crouch_Start();
-	void Crouch_End();
+	void Crouch_Toggle();
 
 	void StartFire();
 	void StopFire();

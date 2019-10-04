@@ -14,7 +14,7 @@ class BWESWEGROUND_API AGameGS : public AGameStateBase
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(Replicated, VisibleAnywhere)
+	UPROPERTY(ReplicatedUsing = "SetAliver_OnRep", VisibleAnywhere)
 	int LeftAlive = 0;
 
 	UFUNCTION()

@@ -65,11 +65,11 @@ void UGameWidgetBase::SetKillCount(int32 KillCounting)
 	}
 }
 
-void UGameWidgetBase::SetLocationDegree(int32 Degree)
+void UGameWidgetBase::SetLocationDegree(float Degree)
 {
 	if (DegreeCount)
 	{
-		FString Temp = FString::Printf(TEXT("%d˚"), Degree);
+		FString Temp = FString::Printf(TEXT("%.0f˚"), Degree);
 		DegreeCount->SetText(FText::FromString(*Temp));
 	}
 }

@@ -46,7 +46,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void SetKillCount(int32 KillCounting);
 	UFUNCTION(BlueprintCallable)
-		void SetLocationDegree(int32 Degree);
+		void SetLocationDegree(float Degree);
 	UFUNCTION(BlueprintCallable)
 		void SetArmedBullet(int32 bullet);
 	UFUNCTION(BlueprintCallable)

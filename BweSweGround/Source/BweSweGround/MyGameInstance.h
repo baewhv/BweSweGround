@@ -9,7 +9,7 @@
 #include "Http.h"
 #include "IHttpRequest.h"
 #include "IHttpResponse.h"
-
+#include "Engine/NetDriver.h"
 #include "MyGameInstance.generated.h"
 
 /**
@@ -22,6 +22,9 @@ class BWESWEGROUND_API UMyGameInstance : public UGameInstance
 public:
 	FString UserID;
 	FString GetUserID();
+
+	virtual void Init() override;
+
 
 	//Post 방식으로 자료 요청
 	void HTTPPost(FString URL, FString UserID, FString Password, FHttpRequestCompleteDelegate ProcessRequestComplete);
@@ -38,6 +41,8 @@ public:
 
 	//FHttpRequestCompleteDelegate LoginDelegate;
 	//FHttpRequestCompleteDelegate MakeServerDelegate;
+
+	void HandleNetworkFailure(UWorld* World, UNetDriver* Driver , ENetworkFailure::Type Type, const FString& Message);
 
 	
 };

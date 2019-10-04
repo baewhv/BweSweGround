@@ -4,10 +4,20 @@
 #include "MyGameInstance.h"
 #include "Http.h"
 #include "Json.h"
+#include "Engine/Engine.h"
 
 FString UMyGameInstance::GetUserID()
 {
+
+
 	return UserID.IsEmpty() ? FString::Printf(TEXT("Noname%d"), FMath::RandRange(0, 100)) : UserID;
+}
+
+void UMyGameInstance::Init()
+{
+	Super::Init();
+
+	GetEngine()->OnNetworkFailure().AddUObject(this, &UMyGameInstance::HandleNetworkFailure);
 }
 
 void UMyGameInstance::HTTPPost(FString URL, FString ID, FString Password, FHttpRequestCompleteDelegate ProcessRequestComplete)
@@ -66,3 +76,9 @@ void UMyGameInstance::HTTPResponseReceived(FHttpRequestPtr Request, FHttpRespons
 		//}
 	}
 }
+
+void UMyGameInstance::HandleNetworkFailure(UWorld * World, UNetDriver * Driver, ENetworkFailure::Type Type, const FString & Message)
+{
+	UE_LOG(LogClass, Warning, TEXT("Net Error %s"), *ENetworkFailure::ToString(Type));
+}
+

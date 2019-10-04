@@ -39,6 +39,10 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(Server, Reliable)
+		void C2S_initProperty();
+		void C2S_initProperty_Implementation();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		class UPawnSensingComponent* PawnSensing;
 
@@ -47,56 +51,64 @@ public:
 	
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
-	float WalkSpeed = 100.0f;
-	float RunSpeed = 600.0f;
+		float WalkSpeed = 100.0f;
+		float RunSpeed = 600.0f;
 	
-	void Sprint_Start();
-	void Sprint_End();
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
-	uint8 bIsSprint : 1;
+		void Sprint_Start();
+		void Sprint_End();
 
-	uint8 bIsAttack : 1;
+	UFUNCTION(NetMulticast, Reliable)
+		void C2S_Sprint_Start();
+		void C2S_Sprint_Start_Implementation();
+
+	UFUNCTION(NetMulticast, Reliable)
+		void C2S_Sprint_End();
+		void C2S_Sprint_End_Implementation();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State", Replicated)
+		uint8 bIsSprint : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State", Replicated)
+		uint8 bIsAttack : 1;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	uint8 bIsStealthKilled : 1;
+		uint8 bIsStealthKilled : 1;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)override;
-	void SetDie();
+	
+	UFUNCTION(NetMulticast, Reliable)
+		void S2A_SetDie();
+		void S2A_SetDie_Implementation();
+	UFUNCTION()
+		void SetHPWidget_OnRep();
+	UFUNCTION()			//다른 컴포넌트의 델리게이트 호출방법(in h)
+		void OnSeenPawn(APawn* PP);
+	UFUNCTION()
+		void OnHearedNoise(APawn* pawn, const FVector& Location, float Volume);
+	
+	void Attack();
+	
+	void getSpawnPoint(ASpawnManager* point);
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing = SetHPWidget_OnRep)
 		float CurrentHP = 100.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		float MaxHP = 100.0f;
 
-	UFUNCTION()
-		void SetHPWidget_OnRep();
-
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		class UAnimMontage* DeadAnimation;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		class UAnimMontage* HitAnimation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EZombieState CurrentState = EZombieState::Normal;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated)
+		EZombieState CurrentState = EZombieState::Normal;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UBehaviorTree* ZombieAI;
-
-	UFUNCTION()			//다른 컴포넌트의 델리게이트 호출방법(in h)
-	void OnSeenPawn(APawn* PP);
-
-	UFUNCTION()
-	void OnHearedNoise(APawn* pawn, const FVector& Location, float Volume);
-
-	void Attack();
-
+		class UBehaviorTree* ZombieAI;
 	UPROPERTY(VisibleAnywhere)
-	ASpawnManager* SpawnPoint;
+		ASpawnManager* SpawnPoint;
 
-	void getSpawnPoint(ASpawnManager* point);
 
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

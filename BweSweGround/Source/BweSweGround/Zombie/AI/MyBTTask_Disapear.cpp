@@ -11,12 +11,16 @@ EBTNodeResult::Type UMyBTTask_Disapear::ExecuteTask(UBehaviorTreeComponent & Own
 {
 	AMyGameModeBase* GM = Cast<AMyGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
 	AZombieAIController* AIC = Cast<AZombieAIController>(OwnerComp.GetOwner());
-	if (AIC && GM)
+	UE_LOG(LogClass, Warning, TEXT("ZombieDie!"), );
+	if (AIC)
 	{
-		AIC->GetPawn()->Destroy();
-		UE_LOG(LogClass, Warning, TEXT("%d Zombie Left!"),GM->GetTargetCount());
-		GM->CheckTargetCount();
+		//AIC->GetPawn()->Destroy();
+		if (GM)
+		{
+			UE_LOG(LogClass, Warning, TEXT("%d Zombie Left!"), GM->GetTargetCount());
+			GM->CheckTargetCount();
+		}
+		
 	}
-
 	return EBTNodeResult::Succeeded;
 }

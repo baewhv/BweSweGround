@@ -16,7 +16,7 @@ class BWESWEGROUND_API ALobbyGS : public AGameStateBase
 public:
 	UPROPERTY(Replicated)//네트워크에 복제! 서버에 있는 값을 클라이언트로
 	int LeftTime = 60;
-	UPROPERTY(Replicated,VisibleAnywhere)
+	UPROPERTY(ReplicatedUsing = "SetAliver_OnRep",VisibleAnywhere)
 	int LeftAlive = 0;
 
 	ALobbyGS();
