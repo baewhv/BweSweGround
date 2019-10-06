@@ -8,7 +8,6 @@
 #include "MyGameInstance.h"
 #include "Http.h"
 #include "Json.h"
-#include "Engine/GameInstance.h"
 
 void UTitleWidgetBase::NativeConstruct()
 {
@@ -108,11 +107,11 @@ void UTitleWidgetBase::ConnectResponseReceived(FHttpRequestPtr Request, FHttpRes
 				FString ID = JsonObject->GetStringField("id");
 				FString Password = JsonObject->GetStringField("password");
 				SetUserID();
-				UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-				if (GI)
-				{
-					GI->HandleNetworkError(ENetworkFailure::ConnectionLost, GIsServer);
-				}
+				//UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+				//if (GI)
+				//{
+				//	GI->HandleNetworkError(ENetworkFailure::ConnectionLost, GIsServer);
+				//}
 				UGameplayStatics::OpenLevel(GetWorld(), FName(*ServerIP->GetText().ToString()));
 			}
 			else
@@ -148,6 +147,10 @@ void UTitleWidgetBase::MakeResponseReceived(FHttpRequestPtr Request, FHttpRespon
 				UE_LOG(LogClass, Warning, TEXT("false!"));
 			}
 		}
+	}
+	else
+	{
+		UE_LOG(LogClass, Warning, TEXT("MakeResponseReceived Fail! %s"), *Response->GetContentAsString());
 	}
 }
 

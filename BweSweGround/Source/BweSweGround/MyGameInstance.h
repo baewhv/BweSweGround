@@ -9,7 +9,7 @@
 #include "Http.h"
 #include "IHttpRequest.h"
 #include "IHttpResponse.h"
-#include "Engine/NetDriver.h"
+//#include "Engine/NetDriver.h"
 #include "MyGameInstance.generated.h"
 
 /**
@@ -23,7 +23,7 @@ public:
 	FString UserID;
 	FString GetUserID();
 
-	virtual void Init() override;
+	//virtual void Init() override;
 
 
 	//Post 방식으로 자료 요청
@@ -42,7 +42,7 @@ public:
 	//FHttpRequestCompleteDelegate LoginDelegate;
 	//FHttpRequestCompleteDelegate MakeServerDelegate;
 
-	void HandleNetworkFailure(UWorld* World, UNetDriver* Driver , ENetworkFailure::Type Type, const FString& Message);
+	/*void HandleNetworkFailure(UWorld* World, UNetDriver* Driver , ENetworkFailure::Type Type, const FString& Message);*/
 
 	
 };

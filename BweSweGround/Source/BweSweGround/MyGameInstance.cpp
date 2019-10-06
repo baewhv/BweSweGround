@@ -13,15 +13,16 @@ FString UMyGameInstance::GetUserID()
 	return UserID.IsEmpty() ? FString::Printf(TEXT("Noname%d"), FMath::RandRange(0, 100)) : UserID;
 }
 
-void UMyGameInstance::Init()
-{
-	Super::Init();
-
-	GetEngine()->OnNetworkFailure().AddUObject(this, &UMyGameInstance::HandleNetworkFailure);
-}
+//void UMyGameInstance::Init()
+//{
+//	Super::Init();
+//
+//	//GetEngine()->OnNetworkFailure().AddUObject(this, &UMyGameInstance::HandleNetworkFailure);
+//}
 
 void UMyGameInstance::HTTPPost(FString URL, FString ID, FString Password, FHttpRequestCompleteDelegate ProcessRequestComplete)
 {
+	UE_LOG(LogClass, Warning, TEXT("Enter HTTPPost"));
 	Http = &FHttpModule::Get();
 
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
@@ -37,6 +38,7 @@ void UMyGameInstance::HTTPPost(FString URL, FString ID, FString Password, FHttpR
 	Request->SetHeader("Content-Type", TEXT("application/x-www-form-urlencoded"));	//주소의 문자를 인코딩
 	Request->SetContentAsString(PostParameters);
 	Request->ProcessRequest();
+	UE_LOG(LogClass, Warning, TEXT("Exit HTTPPost. %s"), );
 }
 
 
@@ -77,8 +79,8 @@ void UMyGameInstance::HTTPResponseReceived(FHttpRequestPtr Request, FHttpRespons
 	}
 }
 
-void UMyGameInstance::HandleNetworkFailure(UWorld * World, UNetDriver * Driver, ENetworkFailure::Type Type, const FString & Message)
-{
-	UE_LOG(LogClass, Warning, TEXT("Net Error %s"), *ENetworkFailure::ToString(Type));
-}
+//void UMyGameInstance::HandleNetworkFailure(UWorld * World, UNetDriver * Driver, ENetworkFailure::Type Type, const FString & Message)
+//{
+//	UE_LOG(LogClass, Warning, TEXT("Net Error %s"), *ENetworkFailure::ToString(Type));
+//}
 
