@@ -74,8 +74,8 @@ void ULobbyWidgetBase::OnTextCommit(const FText & Text, ETextCommit::Type Commit
 				UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 				if (PC && GI) 
 				{
-					FString UserID = GI->GetUserID();
-					FString Temp = FString::Printf(TEXT("%s : %s"), *UserID, *(Text.ToString()));
+					FString NickName = GI->GetUserID();
+					FString Temp = FString::Printf(TEXT("%s : %s"), *NickName, *(Text.ToString()));
 					PC->C2S_SendMessage(FText::FromString(Temp));
 					ChatBox->SetText(FText::FromString(TEXT("")));
 				}

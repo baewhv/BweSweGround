@@ -20,14 +20,15 @@ class BWESWEGROUND_API UMyGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 public:
-	FString UserID;
+	FString NickName;
 	FString GetUserID();
 
 	//virtual void Init() override;
 
 
 	//Post 방식으로 자료 요청
-	void HTTPPost(FString URL, FString UserID, FString Password, FHttpRequestCompleteDelegate ProcessRequestComplete);
+	void HTTPPost(FString URL, FString ID, FString Password, FHttpRequestCompleteDelegate ProcessRequestComplete);
+	void HTTPRegistPost(FString URL, FString ID, FString Password, FString UserNick, FHttpRequestCompleteDelegate ProcessRequestComplete);
 
 	//Get 방식으로 자료 요청
 	//void HTTPGet();

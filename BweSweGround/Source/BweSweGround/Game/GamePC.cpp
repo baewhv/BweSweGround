@@ -15,6 +15,7 @@ AGamePC::AGamePC()
 void AGamePC::BeginPlay()
 {
 	Super::BeginPlay();
+	SetInputMode(FInputModeGameOnly());
 	if (IsLocalPlayerController())
 	{
 		if (GameWidgetClass)

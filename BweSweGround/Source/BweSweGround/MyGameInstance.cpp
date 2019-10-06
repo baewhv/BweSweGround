@@ -8,9 +8,7 @@
 
 FString UMyGameInstance::GetUserID()
 {
-
-
-	return UserID.IsEmpty() ? FString::Printf(TEXT("Noname%d"), FMath::RandRange(0, 100)) : UserID;
+	return NickName.IsEmpty() ? FString::Printf(TEXT("Noname%d"), FMath::RandRange(0, 100)) : NickName;
 }
 
 //void UMyGameInstance::Init()
@@ -22,7 +20,6 @@ FString UMyGameInstance::GetUserID()
 
 void UMyGameInstance::HTTPPost(FString URL, FString ID, FString Password, FHttpRequestCompleteDelegate ProcessRequestComplete)
 {
-	UE_LOG(LogClass, Warning, TEXT("Enter HTTPPost"));
 	Http = &FHttpModule::Get();
 
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
@@ -38,7 +35,25 @@ void UMyGameInstance::HTTPPost(FString URL, FString ID, FString Password, FHttpR
 	Request->SetHeader("Content-Type", TEXT("application/x-www-form-urlencoded"));	//주소의 문자를 인코딩
 	Request->SetContentAsString(PostParameters);
 	Request->ProcessRequest();
-	UE_LOG(LogClass, Warning, TEXT("Exit HTTPPost. %s"), );
+}
+
+void UMyGameInstance::HTTPRegistPost(FString URL, FString ID, FString Password, FString UserNick, FHttpRequestCompleteDelegate ProcessRequestComplete)
+{
+	Http = &FHttpModule::Get();
+
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	//콜백 등록
+	Request->OnProcessRequestComplete() = ProcessRequestComplete;
+
+	FString PostParameters = FString::Printf(TEXT("userid=%s"), *ID)
+		+ FString::Printf(TEXT("&nickname=%s"), *UserNick)
+		+ FString::Printf(TEXT("&password=%s"), *Password);
+	Request->SetURL(URL);
+	Request->SetVerb("POST");
+	Request->SetHeader(TEXT("User-Agent"), "X-UnrealEngine-Agent");
+	Request->SetHeader("Content-Type", TEXT("application/x-www-form-urlencoded"));	//주소의 문자를 인코딩
+	Request->SetContentAsString(PostParameters);
+	Request->ProcessRequest();
 }
 
 

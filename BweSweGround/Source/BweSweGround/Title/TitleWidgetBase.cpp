@@ -8,12 +8,14 @@
 #include "MyGameInstance.h"
 #include "Http.h"
 #include "Json.h"
+#include "GameFramework/PlayerController.h"
+#include "Title/TitlePC.h"
 
 void UTitleWidgetBase::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	UserID = Cast<UEditableTextBox>(GetWidgetFromName(TEXT("UserID")));
+	bIsFocusable = true;
+	NickName = Cast<UEditableTextBox>(GetWidgetFromName(TEXT("UserID")));
 	UserPW = Cast<UEditableTextBox>(GetWidgetFromName(TEXT("UserPW")));
 	ServerIP = Cast<UEditableTextBox>(GetWidgetFromName(TEXT("ServerIP")));
 
@@ -27,6 +29,11 @@ void UTitleWidgetBase::NativeConstruct()
 	{
 		MakeServerButton->OnClicked.AddDynamic(this, &UTitleWidgetBase::MakeServer);
 	}
+	SignUpButton = Cast<UButton>(GetWidgetFromName(TEXT("SignUpButton")));
+	if (SignUpButton)
+	{
+		SignUpButton->OnClicked.AddDynamic(this, &UTitleWidgetBase::OpenSighUp);
+	}
 }
 
 void UTitleWidgetBase::Connect()
@@ -35,42 +42,29 @@ void UTitleWidgetBase::Connect()
 	{
 		
 		UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-		if (GI && UserID && UserPW)
+		if (GI && NickName && UserPW)
 		{
 			GI->HTTPPost(FString(TEXT("http://127.0.0.1:3000/login")),
-				UserID->GetText().ToString(),
+
+				NickName->GetText().ToString(),
+
 				UserPW->GetText().ToString(),
 				FHttpRequestCompleteDelegate::CreateUObject(this, &UTitleWidgetBase::ConnectResponseReceived));
 			
 		}
-		else if(!GI)
-		{
-			UE_LOG(LogClass, Warning, TEXT("connect error(gi)"));
-		}
-		else if (!UserID)
-		{
-			UE_LOG(LogClass, Warning, TEXT("connect error(userid)"));
-		}
-		else if (!UserPW)
-		{
-			UE_LOG(LogClass, Warning, TEXT("connect error(pw)"));
-		}
 	}
-	else
-	{
-		UE_LOG(LogClass, Warning, TEXT("ServerIP"));
-	}
-	
 }
 
 void UTitleWidgetBase::MakeServer()
 {
 	
 	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (GI && UserID && UserPW)
+	if (GI && NickName && UserPW)
 	{
 		GI->HTTPPost(FString(TEXT("http://127.0.0.1:3000/login")),
-			UserID->GetText().ToString(),
+
+			NickName->GetText().ToString(),
+
 			UserPW->GetText().ToString(),
 			FHttpRequestCompleteDelegate::CreateUObject(this, &UTitleWidgetBase::MakeResponseReceived));
 	}
@@ -81,12 +75,22 @@ void UTitleWidgetBase::MakeServer()
 	
 }
 
-void UTitleWidgetBase::SetUserID()
+void UTitleWidgetBase::OpenSighUp()
+{
+	ATitlePC* PC = Cast<ATitlePC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PC)
+	{
+		PC->TitleToSignUpWidget();
+	}
+
+}
+
+void UTitleWidgetBase::SetUserID(FString UserNick)
 {
 	UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (GI)
 	{
-		GI->UserID = UserID->GetText().ToString();
+		GI->NickName = UserNick;
 	}
 }
 
@@ -104,9 +108,8 @@ void UTitleWidgetBase::ConnectResponseReceived(FHttpRequestPtr Request, FHttpRes
 			FString Result = JsonObject->GetStringField("result");
 			if (Result.Compare(TEXT("false")) != 0)
 			{
-				FString ID = JsonObject->GetStringField("id");
-				FString Password = JsonObject->GetStringField("password");
-				SetUserID();
+				FString UserNick = JsonObject->GetStringField("nickname");
+				SetUserID(UserNick);
 				//UMyGameInstance* GI = Cast<UMyGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 				//if (GI)
 				//{
@@ -136,9 +139,10 @@ void UTitleWidgetBase::MakeResponseReceived(FHttpRequestPtr Request, FHttpRespon
 			FString Result = JsonObject->GetStringField("result");
 			if (Result.Compare(TEXT("false")) != 0)
 			{
-				FString ID = JsonObject->GetStringField("id");
-				FString Password = JsonObject->GetStringField("password");
-				SetUserID();
+				//FString ID = JsonObject->GetStringField("id");
+				//FString Password = JsonObject->GetStringField("password");
+				FString UserNick = JsonObject->GetStringField("nickname");
+				SetUserID(UserNick);
 				UGameplayStatics::OpenLevel(GetWorld(), FName(TEXT("Lobby")), true, TEXT("listen"));
 
 			}

@@ -9,10 +9,8 @@ function RuleCreator(path, method, callback){
 }
 
 var rule = [
-    new RuleCreator('/', 'GET', handler.getTest),
-    new RuleCreator('/', 'POST', handler.postTest)
+    new RuleCreator('/register', 'POST', handler.register),
+    new RuleCreator('/login', 'POST', handler.login),
 ]
-
 handler.connectDB(database);
-
 server.serverStart(rule);

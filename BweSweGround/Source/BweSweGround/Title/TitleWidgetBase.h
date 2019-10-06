@@ -22,30 +22,34 @@ public:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class UEditableTextBox* UserID;
+		class UEditableTextBox* NickName;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class UEditableTextBox* UserPW;
+		class UEditableTextBox* UserPW;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class UButton* ConnectButton;
+		class UButton* ConnectButton;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class UButton* MakeServerButton;
+		class UButton* MakeServerButton;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	class UEditableTextBox* ServerIP;
+		class UButton* SignUpButton;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+		class UEditableTextBox* ServerIP;
 
 	UFUNCTION(BlueprintCallable)
-	void Connect();
+		void Connect();
 	UFUNCTION(BlueprintCallable)
-	void MakeServer();
+		void MakeServer();
+	UFUNCTION(BlueprintCallable)
+		void OpenSighUp();
 
-	void SetUserID();
+
+	void SetUserID(FString UserNick);
 
 	void ConnectResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 	void MakeResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-
-	
 
 };
 

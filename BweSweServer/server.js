@@ -4,21 +4,17 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 
 
-function setRouter(app, handle){
-    for (var ix in handle){
-        switch(handle[ix].method){
-            case 'get':
-            app.get(handle[ix].path, handle[ix].callback);
-            break;
-            case 'post':
-            app.post(handle[ix].path, handle[ix].callback);
-            break;
-            case 'put':
-            app.put(handle[ix].path, handle[ix].callback);
-            break;
-            case 'delete':
-            app.delete(handle[ix].path, handle[ix].callback);
-            break;
+function setRouter(app, rule){
+    //배열 루프
+    for(var ix in rule){
+        if (rule[ix].method === 'GET'){
+            app.get(rule[ix].path, rule[ix].callback);
+        } else if (rule[ix].method === 'POST'){
+            app.post(rule[ix].path, rule[ix].callback);
+        } else if (rule[ix].method === 'PUT'){
+            app.put(rule[ix].path, rule[ix].callback);
+        } else if (rule[ix].method === 'DELETE'){
+            app.delete(rule[ix].path, rule[ix].callback);
         }
     }
 }
@@ -34,6 +30,5 @@ function serverStart(rule){
 }
 
 module.exports = {
-    setRouter : setRouter,
     serverStart : serverStart
 }
