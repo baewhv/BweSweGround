@@ -16,6 +16,10 @@ class BWESWEGROUND_API AGameGM : public AGameModeBase
 public:
 	AGameGM();
 	virtual void BeginPlay() override;
+	uint8 bIsStart : 1;
+
+	void checkAliver(int LeftAlive);
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class AMasterItem> ItemClass;

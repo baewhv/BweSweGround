@@ -735,7 +735,7 @@ void AMyCharacter::SetSpringArmPosition(FVector NewPosition)
 void AMyCharacter::SetCurrentBulletUI()
 {
 	AGamePC* PC = GetController<AGamePC>();
-	if (PC)
+	if (PC && PC->GameWidget)
 	{
 		PC->GameWidget->SetArmedBullet(CurrentBullet);
 		PC->GameWidget->SetMagazine(Magazine);
@@ -764,7 +764,7 @@ void AMyCharacter::SetCurrentDegreeUI()
 {
 	AGamePC* PC = GetController<AGamePC>();
 	//UE_LOG(LogClass, Warning, TEXT("%s"), *GetActorForwardVector().ToString());
-	if (PC)	//일단 임시로 이렇게 만들고, 추후에 개선해보자.
+	if (PC && PC->GameWidget)	//일단 임시로 이렇게 만들고, 추후에 개선해보자.
 	{
 		if (GetActorForwardVector().Y > 0)
 		{
@@ -794,6 +794,7 @@ void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(AMyCharacter, WorldDirection);
 	DOREPLIFETIME(AMyCharacter, TraceStart);
 	DOREPLIFETIME(AMyCharacter, TraceEnd);
+	DOREPLIFETIME(AMyCharacter, AimSpeed);
 }
 
 void AMyCharacter::PickUp()

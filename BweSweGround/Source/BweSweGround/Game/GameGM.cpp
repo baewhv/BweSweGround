@@ -15,7 +15,8 @@ AGameGM::AGameGM()
 void AGameGM::BeginPlay()
 {
 	Super::BeginPlay();
-
+	bIsStart = false;
+	
 	//맵에서 아이템 생성 위치 가져오기
 	TArray<AActor*> ItemLocations;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AItemPoint::StaticClass(), ItemLocations);
@@ -24,6 +25,17 @@ void AGameGM::BeginPlay()
 	for (auto Location : ItemLocations) 
 	{
 		GetWorld()->SpawnActor<AMasterItem>(ItemClass, Location->GetTransform());
+	}
+}
+void AGameGM::checkAliver(int LeftAlive)
+{
+	if (LeftAlive > 1)
+	{
+		bIsStart = true;
+	}
+	if (bIsStart && LeftAlive <= 1)
+	{
+
 	}
 }
 void AGameGM::PostLogin(APlayerController * NewPlayer)
@@ -36,6 +48,10 @@ void AGameGM::PostLogin(APlayerController * NewPlayer)
 		if (HasAuthority())
 		{
 			GS->SetAliver_OnRep();
+		}
+		if (!bIsStart)
+		{
+			checkAliver(GS->LeftAlive);	//인원이 2명 이상일 경우 시작 체크.
 		}
 	}
 }
@@ -50,6 +66,10 @@ void AGameGM::Logout(AController * Exiting)
 		if (HasAuthority())//권한이 있는지 체크.
 		{
 			GS->SetAliver_OnRep();
+			if (bIsStart)
+			{
+				checkAliver(GS->LeftAlive);
+			}
 		}
 	}
 }

@@ -12,10 +12,6 @@
 void AMyHUD::BeginPlay()
 {
 	Super::BeginPlay();
-	FStreamableManager LoadAsset;
-
-	FSoftObjectPath CrosshairAsset(TEXT("Texture2D'/Game/Data/crosshair.crosshair'"));
-	Crosshair = Cast<UTexture2D>(LoadAsset.LoadSynchronous(CrosshairAsset));
 
 }
 

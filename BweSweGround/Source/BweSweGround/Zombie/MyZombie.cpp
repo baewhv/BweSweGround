@@ -54,7 +54,7 @@ void AMyZombie::BeginPlay()
 	PawnSensing->OnSeePawn.AddDynamic(this, &AMyZombie::OnSeenPawn);		//다른 컴포넌트의 델리게이트 호출방법(in cpp)
 	PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
 	
-	C2S_initProperty();
+	//C2S_initProperty();
 }
 
 // Called every frame

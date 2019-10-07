@@ -16,7 +16,7 @@ void ATitlePC::BeginPlay()
 		{
 			TitleWidget = CreateWidget<UTitleWidgetBase>(this, TitleWidgetClass);
 			TitleWidget->AddToViewport();
-			UWidgetBlueprintLibrary::SetInputMode_UIOnly(this, Cast<UWidget>(TitleWidget));
+			UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this, Cast<UWidget>(TitleWidget));
 			//GameWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 		if (SignUpWidgetClass)
@@ -35,7 +35,7 @@ void ATitlePC::TitleToSignUpWidget()
 	{
 		SignUpWidget->SetVisibility(ESlateVisibility::Visible);
 		TitleWidget->SetVisibility(ESlateVisibility::Collapsed);
-		UWidgetBlueprintLibrary::SetInputMode_UIOnly(this, Cast<UWidget>(SignUpWidget));
+		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this, Cast<UWidget>(SignUpWidget));
 	}
 }
 
@@ -45,6 +45,6 @@ void ATitlePC::SignUpToTitleWidget()
 	{
 		TitleWidget->SetVisibility(ESlateVisibility::Visible);
 		SignUpWidget->SetVisibility(ESlateVisibility::Collapsed);
-		UWidgetBlueprintLibrary::SetInputMode_UIOnly(this, Cast<UWidget>(TitleWidget));
+		UWidgetBlueprintLibrary::SetInputMode_UIOnlyEx(this, Cast<UWidget>(TitleWidget));
 	}
 }

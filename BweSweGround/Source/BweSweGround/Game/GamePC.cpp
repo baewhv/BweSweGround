@@ -5,6 +5,8 @@
 #include "Player/MyPlayerCameraManager.h"
 #include "Item/InventoryWidgetBase.h"
 #include "Game/GameWidgetBase.h"
+#include "Game/GameGS.h"
+#include "Kismet/GameplayStatics.h"
 
 
 AGamePC::AGamePC()
@@ -22,7 +24,11 @@ void AGamePC::BeginPlay()
 		{
 			GameWidget = CreateWidget<UGameWidgetBase>(this, GameWidgetClass);
 			GameWidget->AddToViewport();
-			//GameWidget->SetVisibility(ESlateVisibility::Collapsed);
+			AGameGS* GS = Cast<AGameGS>(UGameplayStatics::GetGameState(GetWorld()));
+			if (GS)
+			{
+				GameWidget->SetAliveCount(GS->LeftAlive);//카운트 초기화
+			}
 		}
 		if (InventoryWidgetClass)
 		{
@@ -31,6 +37,7 @@ void AGamePC::BeginPlay()
 			InventoryWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
+	
 }
 
 void AGamePC::ShowGameWidget()

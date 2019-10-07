@@ -16,6 +16,7 @@ void AGameGS::SetAliver_OnRep()
 	{
 		PC->GameWidget->SetAliveCount(LeftAlive);
 	}
+
 }
 
 void AGameGS::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
