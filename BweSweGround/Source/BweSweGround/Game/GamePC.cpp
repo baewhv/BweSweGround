@@ -29,6 +29,10 @@ void AGamePC::BeginPlay()
 			{
 				GameWidget->SetAliveCount(GS->LeftAlive);//카운트 초기화
 			}
+			else
+			{
+				UE_LOG(LogClass, Warning, TEXT("GS 로딩 실패!"));
+			}
 		}
 		if (InventoryWidgetClass)
 		{

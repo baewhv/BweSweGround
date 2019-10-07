@@ -33,10 +33,8 @@ void ALobbyGS::SetAliver_OnRep()
 	if (PC && PC->LobbyWidget)
 	{
 		//UE_LOG(LogClass, Warning, TEXT("Aliver : %d"), LeftAlive);
-		//if (PC->LobbyWidget)	//생성 순서 상 로비 위젯은 꽤 나중.
-		//{
+			//생성 순서 상 로비 위젯은 꽤 나중.
 		PC->LobbyWidget->SetLeftAlive(LeftAlive);
-		//}
 	}
 }
 

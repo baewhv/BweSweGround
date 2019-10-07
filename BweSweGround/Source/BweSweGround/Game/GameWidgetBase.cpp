@@ -6,6 +6,7 @@
 #include "Components/ScrollBox.h"
 #include "Components/ProgressBar.h"
 #include "Item/InteractToolTipWidgetBase.h"
+#include "Game/GameGS.h"
 
 void UGameWidgetBase::NativeConstruct()
 {
@@ -20,6 +21,12 @@ void UGameWidgetBase::NativeConstruct()
 	CurrHP = Cast<UProgressBar>(GetWidgetFromName(TEXT("CurrHP")));
 	NameToolTip = Cast<UInteractToolTipWidgetBase>(GetWidgetFromName(TEXT("NameToolTip")));
 	HideItemName();
+
+	AGameGS* GS = GetWorld()->GetGameState<AGameGS>();
+	if (GS)
+	{
+		GS->SetAliver_OnRep();
+	}
 }
 
 void UGameWidgetBase::ShowItemName(FString Name)

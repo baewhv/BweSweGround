@@ -29,11 +29,11 @@ void ULobbyWidgetBase::NativeConstruct()
 	{
 		ChatBox->OnTextCommitted.AddDynamic(this, &ULobbyWidgetBase::OnTextCommit);
 	}
-	/*ALobbyGS* GS = GetWorld()->GetGameState<ALobbyGS>();
+	ALobbyGS* GS = GetWorld()->GetGameState<ALobbyGS>();
 	if (GS)
 	{
 		GS->SetAliver_OnRep();
-	}*/
+	}
 	
 }
 
