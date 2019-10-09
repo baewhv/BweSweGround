@@ -7,12 +7,15 @@
 #include "Animation/AnimInstance.h"
 #include "Zombie/MyZombie.h"
 #include "Game/GamePC.h"
+#include "Game/GameGM.h"
+#include "Game/GameGS.h"
+
 #include "Item/InventoryWidgetBase.h"
 #include "Game/GameWidgetBase.h"
 #include "Camera/CameraComponent.h"
+
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/InputComponent.h"
-
 #include "Components/DecalComponent.h" 
 #include "Components/CapsuleComponent.h"
 #include "Components/PawnNoiseEmitterComponent.h"
@@ -32,7 +35,7 @@ AMyCharacter::AMyCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	bIsGameDone = false;
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(RootComponent);
 
@@ -71,7 +74,8 @@ void AMyCharacter::BeginPlay()
 	SetCurrentDegreeUI();
 
 	GetWorldTimerManager().SetTimer(LookItemHandler, this, &AMyCharacter::TraceObject, 0.1f, true);;
-	C2S_InitProperty();
+	InitProperty();
+
 }
 
 
@@ -88,7 +92,7 @@ void AMyCharacter::Tick(float DeltaTime)
 }
 
 
-void AMyCharacter::C2S_InitProperty_Implementation()
+void AMyCharacter::InitProperty()
 {
 	bIsMotion = false;
 	bIsAlive = true;
@@ -714,6 +718,21 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 	if (CurrentHP <= 0)
 	{
 		S2A_SetDie();
+		S2C_SetResultUI();
+		AGameGS* GS = Cast<AGameGS>(UGameplayStatics::GetGameState(GetWorld()));
+		{
+			GS->LeftAlive--;
+		}
+		AGameGM* GM = Cast<AGameGM>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (GM)
+		{
+			/*UE_LOG(LogClass, Warning, TEXT("Check Aliver%s"), bIsAlive ? TEXT("Alive") : TEXT("Die"));*/
+			GM->checkAliver();
+		}
+		else
+		{
+			UE_LOG(LogClass, Warning, TEXT("GM Not Load"));
+		}
 	}
 	SetCurrentHPUI_OnRep();
 
@@ -777,6 +796,39 @@ void AMyCharacter::SetCurrentDegreeUI()
 	}
 }
 
+void AMyCharacter::S2C_SetResultUI_Implementation()
+{
+	AGamePC* PC =  Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(),0));
+	if(PC && !bIsAlive)
+	{
+		PC->ShowResult(bIsAlive);
+		PC->bIsCurrentPlayerDie = true;
+		
+	}
+}
+
+//void AMyCharacter::SetEndUI()
+//{
+//	UE_LOG(LogClass, Warning, TEXT("Result at PC - %s"), bIsGameDone ? TEXT("Done") : TEXT("Yet"));
+//	UE_LOG(LogClass, Warning, TEXT("ShowResult at PC - %s"), bIsAlive ? TEXT("Alive") : TEXT("Die"));
+//	AGamePC* PC = Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+//	if (PC && !HasAuthority() && !bIsAlive)
+//	{
+//		PC->ShowResult(bIsAlive);
+//	}
+//}
+
+void AMyCharacter::SetEndUI_Implementation()
+{
+
+	AGamePC* PC = Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PC && bIsAlive)
+	{
+		PC->ShowResult(bIsAlive);
+	}
+}
+
+
 void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -795,6 +847,8 @@ void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(AMyCharacter, TraceStart);
 	DOREPLIFETIME(AMyCharacter, TraceEnd);
 	DOREPLIFETIME(AMyCharacter, AimSpeed);
+	DOREPLIFETIME(AMyCharacter, bIsGameDone);
+
 }
 
 void AMyCharacter::PickUp()

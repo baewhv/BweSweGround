@@ -14,7 +14,7 @@ EBTNodeResult::Type UMyBTTask_Disapear::ExecuteTask(UBehaviorTreeComponent & Own
 	UE_LOG(LogClass, Warning, TEXT("ZombieDie!"), );
 	if (AIC)
 	{
-		//AIC->GetPawn()->Destroy();
+		AIC->GetPawn()->Destroy();
 		if (GM)
 		{
 			UE_LOG(LogClass, Warning, TEXT("%d Zombie Left!"), GM->GetTargetCount());

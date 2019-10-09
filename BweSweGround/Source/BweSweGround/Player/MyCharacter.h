@@ -36,9 +36,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(Server, Reliable)
-	void C2S_InitProperty();
-	void C2S_InitProperty_Implementation();
+	void InitProperty();
 
 
 	// Called to bind functionality to input
@@ -136,19 +134,28 @@ public:
 	FVector TraceEnd;
 
 	AActor* InteractTarget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing = SetCurrentHPUI_OnRep)
+		float CurrentHP = 100.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float MaxHP = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		int32 CurrentBullet = 30;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		int32 MaxBullet = 30;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		int32 Magazine = 30;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
-	float WalkSpeed = 600.0f;
+	float WalkSpeed = 600.0f; 
 
 	UPROPERTY(Replicated)
 	float SprintSpeed = 1.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
 	float SprintSpeedValue = 1.5f;
 
 	UPROPERTY(Replicated)
 	float AimSpeed = 1.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Speed")
 	float AimSpeedValue = 0.6f;
 
 	float ForwardValue = 0.0f;
@@ -168,74 +175,73 @@ public:
 	uint8 bIsReloading : 1;
 	UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsStealthKill : 1;
+	UPROPERTY(VisibleAnywhere, Replicated)
+	uint8 bIsGameDone : 1;
 
 	FRotator GetAimOffset() const;
-	//숙이는 것은 기본 기능으로 있음. (Nav CanCrouch
 
 	FTimerHandle FireTimer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		FVector NormalSpringArmPosition;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		FVector CrouchSpringArmPosition;
+
+
+	UFUNCTION(BlueprintCallable)
+		void SetSpringArmPosition(FVector NewPosition);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		TSubclassOf<class UCameraShake> FireCameraShake;
+
+#pragma region Property_Anim
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		class UAnimMontage* DeadAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		class UAnimMontage* HitAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		class UAnimMontage* ReloadAnimation;
+#pragma endregion
+
+#pragma region Property_Effects
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+		class UParticleSystem* BloodEffect;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+		class UParticleSystem* HitEffect;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+		class UParticleSystem* MuzzleFlash;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+		class USoundBase* FireSound;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+		class USoundBase* StuckSound;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+		class UMaterialInterface* BulletDecal;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
+		class UMaterialInterface* BulletDecalBlood;
+#pragma endregion
+
 
 
 	UFUNCTION()
 	void FireTimerFunction();
 
-#pragma region Property-Effects
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
-	class UParticleSystem* BloodEffect;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
-	class UParticleSystem* HitEffect;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
-	class UParticleSystem* MuzzleFlash;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
-	class USoundBase* FireSound;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
-	class USoundBase* StuckSound;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
-	class UMaterialInterface* BulletDecal;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Effect")
-	class UMaterialInterface* BulletDecalBlood;
-#pragma endregion
-
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)override;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FVector NormalSpringArmPosition;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FVector CrouchSpringArmPosition;
 
 	UFUNCTION(BlueprintCallable)
-	FVector GetSpringArmPosition() const;
-	
-	UFUNCTION(BlueprintCallable)
-	void SetSpringArmPosition(FVector NewPosition);
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<class UCameraShake> FireCameraShake;
-
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UAnimMontage* DeadAnimation;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UAnimMontage* HitAnimation;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	class UAnimMontage* ReloadAnimation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, ReplicatedUsing = SetCurrentHPUI_OnRep)
-		float CurrentHP = 100.0f;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		float MaxHP = 100.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 CurrentBullet = 30;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 MaxBullet = 30;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 Magazine = 30;
+		FVector GetSpringArmPosition() const;
 
 	void SetCurrentBulletUI();
 	UFUNCTION()
-	void SetCurrentHPUI_OnRep();
+		void SetCurrentHPUI_OnRep();
 	void SetCurrentDegreeUI();
+
+	UFUNCTION(Client, Reliable)
+	void S2C_SetResultUI();
+	void S2C_SetResultUI_Implementation();
+	UFUNCTION(Client, Reliable)
+	void SetEndUI();
+	void SetEndUI_Implementation();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)const override;
 

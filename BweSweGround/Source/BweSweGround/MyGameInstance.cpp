@@ -8,15 +8,12 @@
 
 FString UMyGameInstance::GetUserID()
 {
-	return NickName.IsEmpty() ? FString::Printf(TEXT("Noname%d"), FMath::RandRange(0, 100)) : NickName;
+	if (NickName.IsEmpty())
+	{
+		NickName = FString::Printf(TEXT("Noname%d"), FMath::RandRange(0, 100));
+	}
+	return NickName;
 }
-
-//void UMyGameInstance::Init()
-//{
-//	Super::Init();
-//
-//	//GetEngine()->OnNetworkFailure().AddUObject(this, &UMyGameInstance::HandleNetworkFailure);
-//}
 
 void UMyGameInstance::HTTPPost(FString URL, FString ID, FString Password, FHttpRequestCompleteDelegate ProcessRequestComplete)
 {
@@ -58,44 +55,18 @@ void UMyGameInstance::HTTPRegistPost(FString URL, FString ID, FString Password, 
 
 
 
-//void UMyGameInstance::HTTPGet()
-//{
-//	Http = &FHttpModule::Get();
-//
-//	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-//	Request->OnProcessRequestComplete().BindUObject(this, &UMyGameInstance::HTTPResponseReceived);
-//
-//	FString url = FString(TEXT("http://home.junios.net:8000/ue4/login.php?id=junios&password=1234"));
-//	Request->SetURL(url);
-//	Request->SetVerb("GET");
-//	Request->SetHeader(TEXT("User-Agent"), "X-UnrealEngine-Agent");
-//	Request->SetHeader("Content-Type", TEXT("application/json"));
-//	Request->ProcessRequest();
-//}
 
 void UMyGameInstance::HTTPResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	GLog->Log(FString::Printf(TEXT("Callback")));
 	if (bWasSuccessful)
 	{
-		//JSON ÆÄ½Ì
 		TSharedPtr<FJsonObject> JsonObject;
 		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 
 		GLog->Log(FString::Printf(TEXT("Receive %s"), *Response->GetContentAsString()));
 
-		//if (FJsonSerializer::Deserialize(Reader, JsonObject))
-		//{
-		//	FString ID = JsonObject->GetStringField("id");
-		//	int Password = (int)JsonObject->GetNumberField("password");
-
-		//	GLog->Log(FString::Printf(TEXT("Parsing %s %d"), *ID, Password));
-		//}
 	}
 }
 
-//void UMyGameInstance::HandleNetworkFailure(UWorld * World, UNetDriver * Driver, ENetworkFailure::Type Type, const FString & Message)
-//{
-//	UE_LOG(LogClass, Warning, TEXT("Net Error %s"), *ENetworkFailure::ToString(Type));
-//}
 

@@ -25,7 +25,15 @@ void UGameWidgetBase::NativeConstruct()
 	AGameGS* GS = GetWorld()->GetGameState<AGameGS>();
 	if (GS)
 	{
-		GS->SetAliver_OnRep();
+		GS->SetAliverUI();
+	}
+	if (KillLogBox)
+	{
+		KillLogBox->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	if (KillCount)
+	{
+		KillCount->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 

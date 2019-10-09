@@ -16,9 +16,9 @@ class BWESWEGROUND_API AGameGM : public AGameModeBase
 public:
 	AGameGM();
 	virtual void BeginPlay() override;
-	uint8 bIsStart : 1;
+	
 
-	void checkAliver(int LeftAlive);
+	void checkAliver();
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -26,5 +26,7 @@ public:
 
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void Logout(AController* Exiting) override;
+
+	void RestartGame();
 	
 };

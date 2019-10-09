@@ -14,11 +14,17 @@ class BWESWEGROUND_API AGameGS : public AGameStateBase
 {
 	GENERATED_BODY()
 public:
-	UPROPERTY(ReplicatedUsing = "SetAliver_OnRep", VisibleAnywhere)
+	AGameGS();
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = SetAliverUI)
 	int LeftAlive = 0;
+	int LeftConnect = 0;
 
+	uint8 bIsStart : 1;
+
+	
+	void SetAliverUI(int Aliver);
 	UFUNCTION()
-	void SetAliver_OnRep();
+	void SetAliverUI();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

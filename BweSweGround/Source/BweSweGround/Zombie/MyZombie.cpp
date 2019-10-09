@@ -54,7 +54,7 @@ void AMyZombie::BeginPlay()
 	PawnSensing->OnSeePawn.AddDynamic(this, &AMyZombie::OnSeenPawn);		//다른 컴포넌트의 델리게이트 호출방법(in cpp)
 	PawnSensing->OnHearNoise.AddDynamic(this, &AMyZombie::OnHearedNoise);
 	
-	//C2S_initProperty();
+	C2S_initProperty();
 }
 
 // Called every frame
@@ -181,7 +181,6 @@ void AMyZombie::SetHPWidget_OnRep()
 	UZombieHPBarWidgetBase* SetZombieHpWidget = Cast<UZombieHPBarWidgetBase>(HPWidget->GetUserWidgetObject());
 	if (SetZombieHpWidget)
 	{
-		UE_LOG(LogClass, Warning, TEXT("SetHPWidget_OnRep"));
 		SetZombieHpWidget->SetZombieHP(CurrentHP/MaxHP);
 	}
 	else
@@ -234,7 +233,7 @@ void AMyZombie::OnHearedNoise(APawn * pawn, const FVector & Location, float Volu
 {
 	if (CurrentState == EZombieState::Normal)
 	{
-		UE_LOG(LogClass, Warning, TEXT("%.0f,%.0f,%.0f"), Location.X, Location.Y, Location.Z);
+		//UE_LOG(LogClass, Warning, TEXT("%.0f,%.0f,%.0f"), Location.X, Location.Y, Location.Z);
 		CurrentState = EZombieState::Alert;
 		AZombieAIController* AIC = Cast<AZombieAIController>(GetController());
 		if (AIC)

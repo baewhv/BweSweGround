@@ -41,8 +41,6 @@ void ULobbyWidgetBase::NativeConstruct()
 
 void ULobbyWidgetBase::StartGame()
 {
-	UE_LOG(LogClass, Warning, TEXT("Start!"));
-	
 	ALobbyGM* GM = Cast<ALobbyGM>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (GM)
 	{

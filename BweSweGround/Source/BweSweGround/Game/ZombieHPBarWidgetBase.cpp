@@ -19,7 +19,6 @@ void UZombieHPBarWidgetBase::SetZombieHP(float Hp)
 	{
 		if (GetVisibility() == ESlateVisibility::Collapsed)
 		{
-			UE_LOG(LogClass, Warning, TEXT("SetZombieHP"));
 			SetVisibility(ESlateVisibility::Visible);
 		}
 		HPBar->SetPercent(Hp);

@@ -7,10 +7,38 @@
 #include "UnrealNetwork.h"
 #include "Engine/World.h"
 #include "GameWidgetBase.h"
+#include "Player/MyCharacter.h"
+#include "MyGameInstance.h"
 
 
-void AGameGS::SetAliver_OnRep()
+AGameGS::AGameGS()
 {
+	bIsStart = false;
+}
+
+void AGameGS::SetAliverUI(int Aliver)
+{
+	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
+	if (GI && HasAuthority())
+	{
+		UE_LOG(LogClass, Warning, TEXT("%s Set Aliver in property! : %d"), *GI->GetUserID(), LeftAlive);
+	}
+	//LeftAlive = Aliver;
+	AGamePC* PC = Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PC && PC->GameWidget && HasAuthority())
+	{
+		PC->GameWidget->SetAliveCount(Aliver);
+	}
+
+}
+
+void AGameGS::SetAliverUI()
+{
+	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
+	if (GI)
+	{
+		UE_LOG(LogClass, Warning, TEXT("%s Set Aliver! : %d"), *GI->GetUserID(), LeftAlive);
+	}
 	AGamePC* PC = Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (PC && PC->GameWidget)
 	{
@@ -18,6 +46,8 @@ void AGameGS::SetAliver_OnRep()
 	}
 
 }
+
+
 
 void AGameGS::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

@@ -45,4 +45,17 @@ public:
 	virtual void SetupInputComponent() override;
 
 	void InventoryToggle();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		class UResultWidgetBase* ResultWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSubclassOf<class UResultWidgetBase> ResultWidgetClass;
+
+	void ShowResult(uint8 result);
+	
+	void ExitGame();
+
+	//UPROPERTY(VisibleAnywhere, Replicated)
+	uint8 bIsCurrentPlayerDie : 1;
 };

@@ -9,7 +9,6 @@
 #include "Http.h"
 #include "IHttpRequest.h"
 #include "IHttpResponse.h"
-//#include "Engine/NetDriver.h"
 #include "MyGameInstance.generated.h"
 
 /**
@@ -30,20 +29,12 @@ public:
 	void HTTPPost(FString URL, FString ID, FString Password, FHttpRequestCompleteDelegate ProcessRequestComplete);
 	void HTTPRegistPost(FString URL, FString ID, FString Password, FString UserNick, FHttpRequestCompleteDelegate ProcessRequestComplete);
 
-	//Get 방식으로 자료 요청
-	//void HTTPGet();
-
 	//HTTP 결과 콜백
 	void HTTPResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	//HTTP 모듈
 	//"Http", "Json", "JsonUtilities", Build.cs에 추가 해야 됨
 	class FHttpModule* Http;
-
-	//FHttpRequestCompleteDelegate LoginDelegate;
-	//FHttpRequestCompleteDelegate MakeServerDelegate;
-
-	/*void HandleNetworkFailure(UWorld* World, UNetDriver* Driver , ENetworkFailure::Type Type, const FString& Message);*/
 
 	
 };
