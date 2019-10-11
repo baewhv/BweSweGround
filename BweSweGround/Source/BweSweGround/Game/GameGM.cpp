@@ -106,5 +106,5 @@ void AGameGM::Logout(AController * Exiting)
 
 void AGameGM::RestartGame()
 {
-	GetWorld()->ServerTravel(TEXT("Lobby"), true);
+	GetWorld()->ServerTravel(TEXT("Lobby"));
 }

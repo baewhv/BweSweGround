@@ -19,10 +19,7 @@ void ALobbyGS::Tick(float DeltaSeconds)
 	ALobbyPC* PC = Cast<ALobbyPC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (PC)
 	{
-		if (LeftAlive >= 2)
-		{
-			PC->LobbyWidget->SetLeftTime(LeftTime);
-		}
+		PC->LobbyWidget->SetLeftTime(LeftTime);
 	}
 
 }

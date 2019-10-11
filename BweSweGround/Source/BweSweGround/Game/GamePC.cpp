@@ -147,7 +147,10 @@ void AGamePC::ShowResult(uint8 result)
 		{
 			ResultWidget->ResultMessageBox->SetText(FText::FromString(TEXT("패배")));
 		}
-		ResultWidget->RestartGameButton->SetVisibility(ESlateVisibility::Collapsed);
+		if (!HasAuthority())
+		{
+			ResultWidget->RestartGameButton->SetVisibility(ESlateVisibility::Collapsed);
+		}
 	}
 	
 }
@@ -156,4 +159,25 @@ void AGamePC::ExitGame()
 {
 	//ClientTravel(TEXT("Title"), ETravelType::TRAVEL_Absolute);	->추후 기능 체크!
 	UGameplayStatics::OpenLevel(GetWorld(), TEXT("Title"));
+	
+}
+
+void AGamePC::C2S_SendMessage_Implementation(const FText & Message)
+{
+	for (auto iter = GetWorld()->GetPlayerControllerIterator(); iter; ++iter)
+	{
+		AGamePC* PC = Cast<AGamePC>(*iter);
+		if (PC)
+		{
+			PC->S2C_SendLog(Message);
+		}
+	}
+}
+
+void AGamePC::S2C_SendLog_Implementation(const FText & Message)
+{
+	if (GameWidget)
+	{
+		GameWidget->SetKillLog(Message);
+	}
 }

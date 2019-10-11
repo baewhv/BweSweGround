@@ -58,4 +58,12 @@ public:
 
 	//UPROPERTY(VisibleAnywhere, Replicated)
 	uint8 bIsCurrentPlayerDie : 1;
+
+	UFUNCTION(Server, Reliable)	//클라이언트에서 서버에서 보내는 행위.
+	void C2S_SendMessage(const FText& Message);
+	void C2S_SendMessage_Implementation(const FText& Message);
+
+	UFUNCTION(Client, Reliable)
+	void S2C_SendLog(const FText& Message);
+	void S2C_SendLog_Implementation(const FText& Message);
 };

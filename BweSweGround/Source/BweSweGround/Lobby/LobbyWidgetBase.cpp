@@ -52,7 +52,7 @@ void ULobbyWidgetBase::OnTextCommit(const FText & Text, ETextCommit::Type Commit
 {
 	switch (CommitMethod)
 	{
-	case ETextCommit::Type::OnCleared:
+	case ETextCommit::Type::OnCleared:	//after enter
 		{
 			//메시지 전송 후 	
 			ALobbyPC* PC = Cast<ALobbyPC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
@@ -75,7 +75,7 @@ void ULobbyWidgetBase::OnTextCommit(const FText & Text, ETextCommit::Type Commit
 					FString NickName = GI->GetUserID();
 					FString Temp = FString::Printf(TEXT("%s : %s"), *NickName, *(Text.ToString()));
 					PC->C2S_SendMessage(FText::FromString(Temp));
-					ChatBox->SetText(FText::FromString(TEXT("")));
+					ChatBox->SetText(FText::FromString(TEXT("")));	//채팅창 비움
 				}
 			}
 			else

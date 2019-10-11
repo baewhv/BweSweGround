@@ -53,14 +53,11 @@ bool ALobbyPC::C2S_SendMessage_Validate(const FText & Message)
 
 void ALobbyPC::C2S_SendMessage_Implementation(const FText & Message)
 {
-	
-
 	for (auto iter = GetWorld()->GetPlayerControllerIterator(); iter; ++iter)
 	{
 		ALobbyPC* PC = Cast<ALobbyPC>(*iter);
 		if (PC)
 		{
-			UE_LOG(LogClass, Warning, TEXT("C2S_SendMessage_Implementation"));
 			PC->S2C_SendMessage(Message);
 		}
 	}

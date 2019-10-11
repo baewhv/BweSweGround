@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ï»¿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "MyCharacter.h"
 #include "MyWeaponComponent.h"
@@ -9,11 +9,10 @@
 #include "Game/GamePC.h"
 #include "Game/GameGM.h"
 #include "Game/GameGS.h"
-
-#include "Item/InventoryWidgetBase.h"
 #include "Game/GameWidgetBase.h"
-#include "Camera/CameraComponent.h"
+#include "Item/InventoryWidgetBase.h"
 
+#include "Camera/CameraComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/DecalComponent.h" 
@@ -57,7 +56,7 @@ AMyCharacter::AMyCharacter()
 	GetCharacterMovement()->MaxWalkSpeedCrouched = 300.0f;
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 	GetCharacterMovement()->CrouchedHalfHeight = GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-	//¾É¾ÒÀ» ¶§ Ä¸½¶ Äİ¶óÀÌ´õ ¼öÁ¤
+	//ì•‰ì•˜ì„ ë•Œ ìº¡ìŠ ì½œë¼ì´ë” ìˆ˜ì •
 	
 	Tags.Add(TEXT("Character"));
 	Tags.Add(TEXT("Player"));
@@ -67,8 +66,8 @@ AMyCharacter::AMyCharacter()
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	NormalSpringArmPosition = GetSpringArmPosition();//¼­ ÀÖÀ» ¶§
-	CrouchSpringArmPosition = NormalSpringArmPosition + FVector(0, 0, -44.0f);	//¾É¾Æ ÀÖÀ» ¶§.
+	NormalSpringArmPosition = GetSpringArmPosition();//ì„œ ìˆì„ ë•Œ
+	CrouchSpringArmPosition = NormalSpringArmPosition + FVector(0, 0, -44.0f);	//ì•‰ì•„ ìˆì„ ë•Œ.
 	SetCurrentBulletUI();
 	SetCurrentHPUI_OnRep();
 	SetCurrentDegreeUI();
@@ -76,6 +75,12 @@ void AMyCharacter::BeginPlay()
 	GetWorldTimerManager().SetTimer(LookItemHandler, this, &AMyCharacter::TraceObject, 0.1f, true);;
 	InitProperty();
 
+	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
+	if (GI)
+	{
+		NickName = GI->NickName;
+		C2S_SetName(NickName);
+	}
 }
 
 
@@ -98,7 +103,7 @@ void AMyCharacter::InitProperty()
 	bIsAlive = true;
 	bIsReloading = false;
 	bIsStealthKill = false;
-	CurrentHP = MaxHP;	//Ã¼·Â ÃÊ±âÈ­
+	CurrentHP = MaxHP;	//ì²´ë ¥ ì´ˆê¸°í™”
 }
 
 // Called to bind functionality to input
@@ -120,7 +125,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &AMyCharacter::Crouch_Toggle);
 	//PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Released, this, &AMyCharacter::Crouch_End);
 
-	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AMyCharacter::Jump);	//UCharacter.h¿¡¼­ »ó¼Ó¹ŞÀº ÇÔ¼ö¸¦ ºÒ·¯¿È
+	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &AMyCharacter::Jump);	//UCharacter.hì—ì„œ ìƒì†ë°›ì€ í•¨ìˆ˜ë¥¼ ë¶ˆëŸ¬ì˜´
 	PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &AMyCharacter::StopJumping);
 
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &AMyCharacter::StartFire);
@@ -142,7 +147,7 @@ void AMyCharacter::TraceObject()
 		PC->GetViewportSize(SizeX, SizeY);
 		PC->DeprojectScreenPositionToWorld(SizeX / 2, SizeY / 2, WorldLocation, WorldDirection);
 		TraceStart = WorldLocation;
-		TraceEnd = TraceStart + (WorldDirection * 300.0f);	//2¹ÌÅÍ
+		TraceEnd = TraceStart + (WorldDirection * 300.0f);	//2ë¯¸í„°
 
 		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectType;
 		ObjectType.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_PhysicsBody));
@@ -161,7 +166,7 @@ void AMyCharacter::TraceObject()
 			ObjectType,
 			false,
 			IgnoreActors,
-			EDrawDebugTrace::None,	//±×¸®Áö ¾Ê°Ú´Ù. / ForDuration -> ÀÏÁ¤ ½Ã°£¸¸
+			EDrawDebugTrace::None,	//ê·¸ë¦¬ì§€ ì•Šê² ë‹¤. / ForDuration -> ì¼ì • ì‹œê°„ë§Œ
 			OutHit,
 			true,
 			FLinearColor::Red, FLinearColor::Green, 5.0f);
@@ -298,6 +303,11 @@ void AMyCharacter::Sprint_End()
 	C2S_Sprint_End();
 }
 
+void AMyCharacter::C2S_SetName_Implementation(FString name)
+{
+	NickName = name;
+}
+
 void AMyCharacter::C2S_Sprint_Start_Implementation()
 {
 	bUseControllerRotationYaw = false;
@@ -326,7 +336,7 @@ void AMyCharacter::Aim_Start()
 	bIsAim = true;
 	AimSpeed = AimSpeedValue;
 	C2S_Aim_Start();
-	//SpringArm->TargetArmLength = 80.0f;	->Ä«¸Ş¶ó·Î(MyPlayerCameraManager) Á¶Á¤
+	//SpringArm->TargetArmLength = 80.0f;	->ì¹´ë©”ë¼ë¡œ(MyPlayerCameraManager) ì¡°ì •
 }
 
 void AMyCharacter::Aim_End()
@@ -353,7 +363,7 @@ void AMyCharacter::C2S_Aim_End_Implementation()
 	AimSpeed = 1.0f;
 }
 
-void AMyCharacter::Crouch_Toggle()	//ÇöÀç Åä±Û·Î½á ±â´É.
+void AMyCharacter::Crouch_Toggle()	//í˜„ì¬ í† ê¸€ë¡œì¨ ê¸°ëŠ¥.
 {
 	if (bIsMotion)
 	{
@@ -418,7 +428,7 @@ void AMyCharacter::S2A_SetDie_Implementation()
 	bIsReloading = false;
 	FString DeadName = FString::Printf(TEXT("Death_%d"), FMath::RandRange(1, 3));
 	PlayAnimMontage(DeadAnimation, 1.0f, FName(*DeadName));
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//Äİ¸®Àü ²ô±â
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);		//ì½œë¦¬ì „ ë„ê¸°
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC)
 	{
@@ -492,14 +502,14 @@ void AMyCharacter::Fire()
 			int32 RandX = FMath::RandRange(-3, 3);
 			PC->DeprojectScreenPositionToWorld(SizeX / 2 - RandX, SizeY / 2, WorldLocation, WorldDirection);
 			TraceStart = WorldLocation;
-			TraceEnd = TraceStart + (WorldDirection * 90000.0f);	//90¹ÌÅÍ
+			TraceEnd = TraceStart + (WorldDirection * 90000.0f);	//90ë¯¸í„°
 			C2S_Shot(TraceStart, TraceEnd);
 		}
 		FRotator PlayerRotation = GetControlRotation();
 		PlayerRotation.Pitch += FMath::RandRange(0.5f, 1.0f);
 		GetController()->SetControlRotation(PlayerRotation);
 
-		if (FireSound && MuzzleFlash)	//º¸È£ Â÷¿ø
+		if (FireSound && MuzzleFlash)	//ë³´í˜¸ ì°¨ì›
 		{
 			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), FireSound, Weapon->GetSocketLocation(TEXT("Muzzle")));
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), MuzzleFlash, Weapon->GetSocketTransform(TEXT("Muzzle")));
@@ -507,8 +517,8 @@ void AMyCharacter::Fire()
 		if (PC)
 		{
 			//PC->PlayerCameraManager->PlayCameraShake(UMyCameraShake::StaticClass());
-			//PC->PlayerCameraManager->PlayWorldCameraShake();	//¸ğµç °÷ Èçµé±â?
-			PC->PlayerCameraManager->PlayCameraShake(FireCameraShake);	//Ä«¸Ş¶ó ½¦ÀÌÅ©¸¦ ¼±ÅÃÇÏ°Ô²û
+			//PC->PlayerCameraManager->PlayWorldCameraShake();	//ëª¨ë“  ê³³ í”ë“¤ê¸°?
+			PC->PlayerCameraManager->PlayCameraShake(FireCameraShake);	//ì¹´ë©”ë¼ ì‰ì´í¬ë¥¼ ì„ íƒí•˜ê²Œë”
 		}
 		if (bIsFire)
 		{
@@ -533,7 +543,7 @@ void AMyCharacter::Stuck()
 	{
 		Sprint_End();
 	}
-	if (StuckSound)	//º¸È£ Â÷¿ø
+	if (StuckSound)	//ë³´í˜¸ ì°¨ì›
 	{
 		UGameplayStatics::SpawnSoundAtLocation(GetWorld(), FireSound, Weapon->GetSocketLocation(TEXT("Muzzle")));
 	}
@@ -566,7 +576,7 @@ void AMyCharacter::C2S_Shot_Implementation(FVector _TraceStart, FVector _TraceEn
 		ObjectType,
 		false,
 		IgnoreActors,
-		EDrawDebugTrace::None,	//±×¸®Áö ¾Ê°Ú´Ù. / ForDuration -> ÀÏÁ¤ ½Ã°£¸¸
+		EDrawDebugTrace::None,	//ê·¸ë¦¬ì§€ ì•Šê² ë‹¤. / ForDuration -> ì¼ì • ì‹œê°„ë§Œ
 		OutHit,
 		true,
 		FLinearColor::Red, FLinearColor::Green, 5.0f);
@@ -587,9 +597,9 @@ void AMyCharacter::C2S_Shot_Implementation(FVector _TraceStart, FVector _TraceEn
 		}
 
 		S2A_SpawnDecalAndEffect(OutHit, HitP, DecalP);
-		//¹üÀ§ ´ë¹ÌÁö
+		//ë²”ìœ„ ëŒ€ë¯¸ì§€
 		//UGameplayStatics::ApplyRadialDamage(GetWorld(), 30.0f, OutHit.ImpactPoint, 500.0f, nullptr, IgnoreActors, this, GetController(), false, ECollisionChannel::ECC_Visibility);
-		//Æ÷ÀÎÆ® ´ë¹ÌÁö
+		//í¬ì¸íŠ¸ ëŒ€ë¯¸ì§€
 		UGameplayStatics::ApplyPointDamage(OutHit.GetActor(), 10.0f, _TraceEnd - _TraceStart, OutHit, GetController(), this, nullptr);
 
 	}
@@ -666,7 +676,7 @@ void AMyCharacter::EndStealthKill()
 FRotator AMyCharacter::GetAimOffset() const
 {
 	//FVector AimDirWS = GetBaseAimRotation().Vector();
-	//FVector AimDirLS = ActorToWorld().InverseTransformVectorNoScale(AimDirWS);	//¿ùµå ¹æÇâÀ» ·ÎÄÃ¹æÇâÀ¸·Î ÀüÈ¯.
+	//FVector AimDirLS = ActorToWorld().InverseTransformVectorNoScale(AimDirWS);	//ì›”ë“œ ë°©í–¥ì„ ë¡œì»¬ë°©í–¥ìœ¼ë¡œ ì „í™˜.
 	//FRotator AimRotLS = AimDirLS.Rotation();
 
 	return ActorToWorld().InverseTransformVectorNoScale(GetBaseAimRotation().Vector()).Rotation();
@@ -679,8 +689,12 @@ void AMyCharacter::FireTimerFunction()
 
 float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEvent, AController * EventInstigator, AActor * DamageCauser)
 {
-	
-	if (CurrentHP == 0)	//¶Ç Á×ÀÌÁö ¾Êµµ·Ï ¹æÁö
+	AMyCharacter* CR = Cast<AMyCharacter>(DamageCauser);
+	if (CR)
+	{
+		UE_LOG(LogClass, Warning, TEXT("Causer : %s(%s) to : %s(%s)"), *DamageCauser->GetName(), *CR->NickName, *this->GetName(), *NickName);
+	}
+	if (CurrentHP == 0)	//ë˜ ì£½ì´ì§€ ì•Šë„ë¡ ë°©ì§€
 	{
 		return 0;
 	}
@@ -713,12 +727,13 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 	FString HitName = FString::Printf(TEXT("Hit_%d"), FMath::RandRange(1, 4));
 	PlayAnimMontage(HitAnimation, 1.0f, FName(*HitName));
 	bIsReloading = false;
-	CurrentHP = FMath::Clamp<float>(CurrentHP, 0, MaxHP);	//Ã¼·ÂÀ» º¸Á¤(-·Î ¶³¾îÁ®µµ 0À¸·Î °íÁ¤)
+	CurrentHP = FMath::Clamp<float>(CurrentHP, 0, MaxHP);	//ì²´ë ¥ì„ ë³´ì •(-ë¡œ ë–¨ì–´ì ¸ë„ 0ìœ¼ë¡œ ê³ ì •)
 
 	if (CurrentHP <= 0)
 	{
 		S2A_SetDie();
-		S2C_SetResultUI();
+		
+		S2C_SetResultUI(DamageCauser, this);
 		AGameGS* GS = Cast<AGameGS>(UGameplayStatics::GetGameState(GetWorld()));
 		{
 			GS->LeftAlive--;
@@ -783,7 +798,7 @@ void AMyCharacter::SetCurrentDegreeUI()
 {
 	AGamePC* PC = GetController<AGamePC>();
 	//UE_LOG(LogClass, Warning, TEXT("%s"), *GetActorForwardVector().ToString());
-	if (PC && PC->GameWidget)	//ÀÏ´Ü ÀÓ½Ã·Î ÀÌ·¸°Ô ¸¸µé°í, ÃßÈÄ¿¡ °³¼±ÇØº¸ÀÚ.
+	if (PC && PC->GameWidget)	//ì¼ë‹¨ ì„ì‹œë¡œ ì´ë ‡ê²Œ ë§Œë“¤ê³ , ì¶”í›„ì— ê°œì„ í•´ë³´ì.
 	{
 		if (GetActorForwardVector().Y > 0)
 		{
@@ -796,13 +811,16 @@ void AMyCharacter::SetCurrentDegreeUI()
 	}
 }
 
-void AMyCharacter::S2C_SetResultUI_Implementation()
+void AMyCharacter::S2C_SetResultUI_Implementation(AActor* Causer, AActor* victim)
 {
 	AGamePC* PC =  Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(),0));
-	if(PC && !bIsAlive)
+	AMyCharacter* CR = Cast<AMyCharacter>(Causer);
+	if(PC && !bIsAlive && CR)
 	{
 		PC->ShowResult(bIsAlive);
 		PC->bIsCurrentPlayerDie = true;
+		FString SendLog = FString::Printf(TEXT("%së‹˜ì´ %së‹˜ì„ ì²˜ì¹˜í•˜ì˜€ìŠµë‹ˆë‹¤."), *CR->NickName, *NickName);
+		PC->C2S_SendMessage(FText::FromString(SendLog));
 		
 	}
 }
@@ -848,7 +866,6 @@ void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 	DOREPLIFETIME(AMyCharacter, TraceEnd);
 	DOREPLIFETIME(AMyCharacter, AimSpeed);
 	DOREPLIFETIME(AMyCharacter, bIsGameDone);
-
 }
 
 void AMyCharacter::PickUp()
@@ -867,7 +884,7 @@ void AMyCharacter::PickUp()
 
 void AMyCharacter::C2S_CheckPickUpItem_Implementation(AMasterItem * Item)
 {
-	if (Item&& !Item->IsPendingKill())//IsPendingKill -> ¼­¹ö»ó¿¡¼­ »èÁ¦µÉ ¾ÆÀÌÅÛ. 
+	if (Item&& !Item->IsPendingKill())//IsPendingKill -> ì„œë²„ìƒì—ì„œ ì‚­ì œë  ì•„ì´í…œ. 
 	{
 		S2C_CompletePickUpItem(Item);
 		Item->Destroy();
@@ -876,7 +893,7 @@ void AMyCharacter::C2S_CheckPickUpItem_Implementation(AMasterItem * Item)
 
 void AMyCharacter::S2C_CompletePickUpItem_Implementation(AMasterItem * Item)
 {
-	if (Item && !Item->IsPendingKill())//IsPendingKill -> ¼­¹ö»ó¿¡¼­ »èÁ¦µÉ ¾ÆÀÌÅÛ. 
+	if (Item && !Item->IsPendingKill())//IsPendingKill -> ì„œë²„ìƒì—ì„œ ì‚­ì œë  ì•„ì´í…œ. 
 	{
 		AGamePC* PC = Cast<AGamePC>(GetController());
 		if (PC)

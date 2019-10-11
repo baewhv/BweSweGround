@@ -27,10 +27,7 @@ void UGameWidgetBase::NativeConstruct()
 	{
 		GS->SetAliverUI();
 	}
-	if (KillLogBox)
-	{
-		KillLogBox->SetVisibility(ESlateVisibility::Collapsed);
-	}
+	
 	if (KillCount)
 	{
 		KillCount->SetVisibility(ESlateVisibility::Collapsed);

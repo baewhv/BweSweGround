@@ -12,5 +12,4 @@ UMyCameraShake::UMyCameraShake()
 	RotOscillation.Pitch.Amplitude = 3.0f;	//카메라를 회전하듯 튕길 정도.
 	RotOscillation.Pitch.Frequency = 1;	//?
 	RotOscillation.Pitch.InitialOffset = EInitialOscillatorOffset::EOO_OffsetZero;	//?
-
 }

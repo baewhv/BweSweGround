@@ -18,9 +18,13 @@ void ALobbyGM::LeftTimer()
 	ALobbyGS* GS = GetGameState<ALobbyGS>();
 	if (GS)
 	{
-		GS->LeftTime--;
+		if (GS->LeftAlive > 1)
+		{
+			GS->LeftTime--;
+		}
 		if (GS->LeftTime <= 0)
 		{
+			GS->LeftTime = 0;
 			StartGame();
 		}
 	}

@@ -14,7 +14,6 @@ class BWESWEGROUND_API ALobbyPC : public APlayerController
 {
 	GENERATED_BODY()
 public:
-	int a;
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TSubclassOf<class ULobbyWidgetBase> LobbyWidgetClass;
 
@@ -35,3 +34,4 @@ public:
 	void S2C_SendMessage(const FText& Message);
 	void S2C_SendMessage_Implementation(const FText& Message);
 };
+

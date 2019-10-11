@@ -63,6 +63,12 @@ public:
 	void Sprint_Start();
 	void Sprint_End();
 
+	FString NickName;
+	
+	UFUNCTION(Server, Reliable)
+	void C2S_SetName(const FString name);
+	void C2S_SetName_Implementation(const FString name);
+
 	UFUNCTION(Server, Reliable)
 	void C2S_Sprint_Start();
 	void C2S_Sprint_Start_Implementation();
@@ -237,8 +243,9 @@ public:
 	void SetCurrentDegreeUI();
 
 	UFUNCTION(Client, Reliable)
-	void S2C_SetResultUI();
-	void S2C_SetResultUI_Implementation();
+	void S2C_SetResultUI(AActor* Causer, AActor* victim);
+	void S2C_SetResultUI_Implementation(AActor* Causer, AActor* victim);
+
 	UFUNCTION(Client, Reliable)
 	void SetEndUI();
 	void SetEndUI_Implementation();
@@ -248,6 +255,7 @@ public:
 	FTimerHandle LookItemHandler;
 
 	FHitResult PickUpItem;
+
 	UFUNCTION()
 	void PickUp();
 
