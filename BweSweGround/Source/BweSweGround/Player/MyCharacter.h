@@ -239,7 +239,7 @@ public:
 
 	void SetCurrentBulletUI();
 	UFUNCTION()
-		void SetCurrentHPUI_OnRep();
+	void SetCurrentHPUI_OnRep();
 	void SetCurrentDegreeUI();
 
 	UFUNCTION(Client, Reliable)

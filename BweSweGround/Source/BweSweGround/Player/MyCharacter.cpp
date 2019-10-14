@@ -9,6 +9,7 @@
 #include "Game/GamePC.h"
 #include "Game/GameGM.h"
 #include "Game/GameGS.h"
+#include "Game/GamePS.h"
 #include "Game/GameWidgetBase.h"
 #include "Item/InventoryWidgetBase.h"
 
@@ -819,9 +820,12 @@ void AMyCharacter::S2C_SetResultUI_Implementation(AActor* Causer, AActor* victim
 	{
 		PC->ShowResult(bIsAlive);
 		PC->bIsCurrentPlayerDie = true;
-		FString SendLog = FString::Printf(TEXT("%s님이 %s님을 처치하였습니다."), *CR->NickName, *NickName);
-		PC->C2S_SendMessage(FText::FromString(SendLog));
-		
+		AGamePS* PS = GetPlayerState<AGamePS>();
+		if (PS)
+		{
+			FString SendLog = FString::Printf(TEXT("%s님이 %s님을 처치하였습니다."), *CR->NickName, *NickName);
+			PC->C2S_SendMessage(FText::FromString(SendLog));
+		}
 	}
 }
 
@@ -838,7 +842,6 @@ void AMyCharacter::S2C_SetResultUI_Implementation(AActor* Causer, AActor* victim
 
 void AMyCharacter::SetEndUI_Implementation()
 {
-
 	AGamePC* PC = Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (PC && bIsAlive)
 	{
