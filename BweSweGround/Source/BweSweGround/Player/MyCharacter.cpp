@@ -11,6 +11,7 @@
 #include "Game/GameGS.h"
 #include "Game/GamePS.h"
 #include "Game/GameWidgetBase.h"
+#include "MyGameInstance.h"
 #include "Item/InventoryWidgetBase.h"
 
 #include "Camera/CameraComponent.h"
@@ -28,7 +29,7 @@
 #include "TimerManager.h"
 #include "Engine/World.h"
 #include "UnrealNetwork.h"
-#include "MyGameInstance.h"
+
 
 // Sets default values
 AMyCharacter::AMyCharacter()
@@ -75,13 +76,6 @@ void AMyCharacter::BeginPlay()
 
 	GetWorldTimerManager().SetTimer(LookItemHandler, this, &AMyCharacter::TraceObject, 0.1f, true);;
 	InitProperty();
-
-	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
-	if (GI)
-	{
-		NickName = GI->NickName;
-		C2S_SetName(NickName);
-	}
 }
 
 
@@ -304,10 +298,6 @@ void AMyCharacter::Sprint_End()
 	C2S_Sprint_End();
 }
 
-void AMyCharacter::C2S_SetName_Implementation(FString name)
-{
-	NickName = name;
-}
 
 void AMyCharacter::C2S_Sprint_Start_Implementation()
 {
@@ -829,16 +819,6 @@ void AMyCharacter::S2C_SetResultUI_Implementation(AActor* Causer, AActor* victim
 	}
 }
 
-//void AMyCharacter::SetEndUI()
-//{
-//	UE_LOG(LogClass, Warning, TEXT("Result at PC - %s"), bIsGameDone ? TEXT("Done") : TEXT("Yet"));
-//	UE_LOG(LogClass, Warning, TEXT("ShowResult at PC - %s"), bIsAlive ? TEXT("Alive") : TEXT("Die"));
-//	AGamePC* PC = Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-//	if (PC && !HasAuthority() && !bIsAlive)
-//	{
-//		PC->ShowResult(bIsAlive);
-//	}
-//}
 
 void AMyCharacter::SetEndUI_Implementation()
 {
@@ -904,5 +884,17 @@ void AMyCharacter::S2C_CompletePickUpItem_Implementation(AMasterItem * Item)
 			int32 SlotIndex = PC->InventoryWidget->GetEmptySlot();
 			PC->InventoryWidget->SetItemSlot(SlotIndex, Item->ItemData);
 		}
+	}
+}
+
+void AMyCharacter::OnRep_PlayerState()
+{
+	AGamePS* PS = GetPlayerState<AGamePS>();
+	if (PS)
+	{
+		
+		NickName = PS->GetPlayerName();
+		UE_LOG(LogClass, Warning, TEXT("my name is %s in %s. And My State is %s"), *NickName, *GetName(),*PS->GetName());
+		
 	}
 }

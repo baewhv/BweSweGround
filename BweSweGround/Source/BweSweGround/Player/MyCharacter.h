@@ -63,11 +63,8 @@ public:
 	void Sprint_Start();
 	void Sprint_End();
 
+	UPROPERTY(VisibleAnywhere)
 	FString NickName;
-	
-	UFUNCTION(Server, Reliable)
-	void C2S_SetName(const FString name);
-	void C2S_SetName_Implementation(const FString name);
 
 	UFUNCTION(Server, Reliable)
 	void C2S_Sprint_Start();
@@ -266,4 +263,6 @@ public:
 	UFUNCTION(Client, Reliable)
 	void S2C_CompletePickUpItem(class AMasterItem* Item);
 	void S2C_CompletePickUpItem_Implementation(class AMasterItem* Item);
+
+	virtual void OnRep_PlayerState() override;
 };

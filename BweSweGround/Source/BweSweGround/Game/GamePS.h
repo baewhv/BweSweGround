@@ -13,8 +13,9 @@ UCLASS()
 class BWESWEGROUND_API AGamePS : public APlayerState
 {
 	GENERATED_BODY()
-
 public:
-	virtual void SetPlayerName(const FString& S) override;
-	
+	AGamePS();
+
+	virtual void BeginPlay() override;
+
 };
