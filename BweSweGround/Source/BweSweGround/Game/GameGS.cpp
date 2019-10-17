@@ -18,11 +18,11 @@ AGameGS::AGameGS()
 
 void AGameGS::SetAliverUI(int Aliver)
 {
-	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
-	if (GI && HasAuthority())
-	{
-		UE_LOG(LogClass, Warning, TEXT("%s Set Aliver in property! : %d"), *GI->GetUserID(), LeftAlive);
-	}
+	//UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
+	//if (GI && HasAuthority())
+	//{
+	//	UE_LOG(LogClass, Warning, TEXT("%s Set Aliver in property! : %d"), *GI->GetUserID(), LeftAlive);
+	//}
 	//LeftAlive = Aliver;
 	AGamePC* PC = Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (PC && PC->GameWidget && HasAuthority())
@@ -34,11 +34,11 @@ void AGameGS::SetAliverUI(int Aliver)
 
 void AGameGS::SetAliverUI()
 {
-	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
-	if (GI)
-	{
-		UE_LOG(LogClass, Warning, TEXT("%s Set Aliver! : %d"), *GI->GetUserID(), LeftAlive);
-	}
+	//UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
+	//if (GI)
+	//{
+	//	UE_LOG(LogClass, Warning, TEXT("%s Set Aliver! : %d"), *GI->GetUserID(), LeftAlive);
+	//}
 	AGamePC* PC = Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (PC && PC->GameWidget)
 	{

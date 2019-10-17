@@ -17,5 +17,11 @@ public:
 	AGamePS();
 
 	virtual void BeginPlay() override;
+	void SetPlayerNickName();
 
+	UFUNCTION(Server, Reliable)
+	void SetNickName(const FString& name);
+	void SetNickName_Implementation(const FString& name);
+
+	uint8 SetName : 1;
 };

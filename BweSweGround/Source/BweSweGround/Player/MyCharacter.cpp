@@ -723,8 +723,13 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const & DamageEv
 	if (CurrentHP <= 0)
 	{
 		S2A_SetDie();
+		//AMyCharacter* CR = Cast<AMyCharacter>(DamageCauser);
+		AGamePS* CauserPS = CR->GetPlayerState <AGamePS>();
+		AGamePS* VictimPS = GetPlayerState<AGamePS>();
+
+		FString SendLog = FString::Printf(TEXT("%s님이 %s님을 처치하였습니다."), *CauserPS->GetPlayerName(), *VictimPS->GetPlayerName());
+		S2C_SetResultUI(SendLog);
 		
-		S2C_SetResultUI(DamageCauser, this);
 		AGameGS* GS = Cast<AGameGS>(UGameplayStatics::GetGameState(GetWorld()));
 		{
 			GS->LeftAlive--;
@@ -802,19 +807,17 @@ void AMyCharacter::SetCurrentDegreeUI()
 	}
 }
 
-void AMyCharacter::S2C_SetResultUI_Implementation(AActor* Causer, AActor* victim)
+void AMyCharacter::S2C_SetResultUI_Implementation(const FString& message)
 {
 	AGamePC* PC =  Cast<AGamePC>(UGameplayStatics::GetPlayerController(GetWorld(),0));
-	AMyCharacter* CR = Cast<AMyCharacter>(Causer);
-	if(PC && !bIsAlive && CR)
+	if(PC && !bIsAlive)
 	{
 		PC->ShowResult(bIsAlive);
 		PC->bIsCurrentPlayerDie = true;
 		AGamePS* PS = GetPlayerState<AGamePS>();
 		if (PS)
 		{
-			FString SendLog = FString::Printf(TEXT("%s님이 %s님을 처치하였습니다."), *CR->NickName, *NickName);
-			PC->C2S_SendMessage(FText::FromString(SendLog));
+			PC->C2S_SendMessage(FText::FromString(message));
 		}
 	}
 }
@@ -887,14 +890,23 @@ void AMyCharacter::S2C_CompletePickUpItem_Implementation(AMasterItem * Item)
 	}
 }
 
-void AMyCharacter::OnRep_PlayerState()
+
+void AMyCharacter::OnRep_Controller()
 {
+	Super::OnRep_Controller();
+	AGamePC* PC = GetController<AGamePC>();
 	AGamePS* PS = GetPlayerState<AGamePS>();
-	if (PS)
+	/*UE_LOG(LogClass, Warning, TEXT("PC : %s,PS : %s, GI : %s"),
+		PC ? *PC->GetName() : TEXT("Fail"),
+		PS ? *PS->GetName() : TEXT("Fail"),
+		GI ? *GI->NickName : TEXT("Fail"));*/
+	if (PC && PS)
 	{
-		
-		NickName = PS->GetPlayerName();
-		UE_LOG(LogClass, Warning, TEXT("my name is %s in %s. And My State is %s"), *NickName, *GetName(),*PS->GetName());
-		
+		//UE_LOG(LogClass, Warning, TEXT("linked Controller at %s, %s"), *GI->NickName, *GetName());
+		if (PC->IsLocalPlayerController())
+		{
+			PS->SetPlayerNickName();
+			NickName = PS->GetPlayerName();
+		}
 	}
 }

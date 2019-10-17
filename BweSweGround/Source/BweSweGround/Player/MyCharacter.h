@@ -240,8 +240,8 @@ public:
 	void SetCurrentDegreeUI();
 
 	UFUNCTION(Client, Reliable)
-	void S2C_SetResultUI(AActor* Causer, AActor* victim);
-	void S2C_SetResultUI_Implementation(AActor* Causer, AActor* victim);
+	void S2C_SetResultUI(const FString& message);
+	void S2C_SetResultUI_Implementation(const FString& message);
 
 	UFUNCTION(Client, Reliable)
 	void SetEndUI();
@@ -264,5 +264,5 @@ public:
 	void S2C_CompletePickUpItem(class AMasterItem* Item);
 	void S2C_CompletePickUpItem_Implementation(class AMasterItem* Item);
 
-	virtual void OnRep_PlayerState() override;
+	virtual void OnRep_Controller() override;
 };

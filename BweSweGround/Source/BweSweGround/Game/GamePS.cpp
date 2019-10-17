@@ -7,19 +7,39 @@
 
 AGamePS::AGamePS()
 {
-	bUseCustomPlayerNames = true;
+	SetName = false;
 }
 
 void AGamePS::BeginPlay()
 {
+
+	Super::BeginPlay();
+	//UE_LOG(LogClass, Warning, TEXT("GamePS On! : %s"), *GetName());
+	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
+	if (GI && HasAuthority())
+	{
+		SetPlayerName(GI->NickName);
+		UE_LOG(LogClass, Warning, TEXT("GameName Set! : %s / %s"), *GetName(), *GetPlayerName());
+	}
+	else
+	{
+		//UE_LOG(LogClass, Warning, TEXT("GI : %s, HasAuthority : %s"), GI ? *GI->GetName() : TEXT("GI null"), HasAuthority() ? TEXT("HasAuthority"): TEXT("NotHasAutohrity"));
+	}
+}
+
+void AGamePS::SetPlayerNickName()
+{
 	UMyGameInstance* GI = GetGameInstance<UMyGameInstance>();
 	if (GI)
 	{
-		if (GI->NickName.IsEmpty())
-		{
-			SetPlayerName(GI->NickName);
-		}
-		UE_LOG(LogClass, Warning, TEXT("my name is %s"), *GetPlayerName());
+		SetPlayerName(GI->NickName);
+		SetNickName(GI->NickName);
+		UE_LOG(LogClass, Warning, TEXT("GameName Set! : %s / %s"), *GetName(), *GetPlayerName());
 	}
+}
+
+void AGamePS::SetNickName_Implementation(const FString& name)
+{
+	SetPlayerName(name);
 }
 

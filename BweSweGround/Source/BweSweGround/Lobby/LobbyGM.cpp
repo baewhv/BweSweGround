@@ -60,5 +60,5 @@ void ALobbyGM::Logout(AController * Exiting)
 
 void ALobbyGM::StartGame()
 {
-	GetWorld()->ServerTravel(TEXT("Scene01"));
+	GetWorld()->ServerTravel(TEXT("Scene01_Back"));
 }
